@@ -22,6 +22,7 @@
 		12CAF5AB2CEC9197009E059C /* SF-Pro-Text-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 12CAF5A92CEC9179009E059C /* SF-Pro-Text-Regular.otf */; };
 		12CAF5AC2CEC919A009E059C /* SF-Pro-Text-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 12CAF5AA2CEC9179009E059C /* SF-Pro-Text-Bold.otf */; };
 		12CAF5AE2CECAA30009E059C /* UIColor + Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12CAF5AD2CECAA30009E059C /* UIColor + Extension.swift */; };
+		12CAF5B02CF610A4009E059C /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12CAF5AF2CF610A4009E059C /* Constants.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,6 +62,7 @@
 		12CAF5A92CEC9179009E059C /* SF-Pro-Text-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SF-Pro-Text-Regular.otf"; sourceTree = "<group>"; };
 		12CAF5AA2CEC9179009E059C /* SF-Pro-Text-Bold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SF-Pro-Text-Bold.otf"; sourceTree = "<group>"; };
 		12CAF5AD2CECAA30009E059C /* UIColor + Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor + Extension.swift"; sourceTree = "<group>"; };
+		12CAF5AF2CF610A4009E059C /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -164,6 +166,7 @@
 				12086BF42CD6C48900691154 /* Assets.xcassets */,
 				12CAF5A82CEC9179009E059C /* ImageFeedFonts */,
 				12CAF5AD2CECAA30009E059C /* UIColor + Extension.swift */,
+				12CAF5AF2CF610A4009E059C /* Constants.swift */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -317,6 +320,7 @@
 				12086BEC2CD6C48800691154 /* AppDelegate.swift in Sources */,
 				12086C9B2CE38B8100691154 /* SingleImageViewController.swift in Sources */,
 				12086BEE2CD6C48800691154 /* SceneDelegate.swift in Sources */,
+				12CAF5B02CF610A4009E059C /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
