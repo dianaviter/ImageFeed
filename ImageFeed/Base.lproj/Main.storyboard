@@ -268,7 +268,7 @@
                                     <userDefinedRuntimeAttribute type="boolean" keyPath="keyPath" value="YES"/>
                                 </userDefinedRuntimeAttributes>
                                 <connections>
-                                    <segue destination="GlR-CY-Pfp" kind="presentation" identifier="ShowWebView" id="9T7-j7-PMB"/>
+                                    <segue destination="GlR-CY-Pfp" kind="presentation" identifier="ShowWebView" modalPresentationStyle="fullScreen" id="9T7-j7-PMB"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -296,11 +296,11 @@
             <objects>
                 <viewController id="GlR-CY-Pfp" customClass="WebViewViewController" customModule="ImageFeed" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="ju3-os-8zg">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="886"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <wkWebView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="c85-wh-Duo">
-                                <rect key="frame" x="0.0" y="0.0" width="414" height="886"/>
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                                 <color key="backgroundColor" name="YP White (iOS)"/>
                                 <wkWebViewConfiguration key="configuration">
                                     <audiovisualMediaTypes key="mediaTypesRequiringUserActionForPlayback" none="YES"/>
@@ -311,6 +311,15 @@
                                 <rect key="frame" x="0.0" y="0.0" width="414" height="4"/>
                                 <color key="progressTintColor" name="YP Black (iOS)"/>
                             </progressView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0Un-eU-X7z">
+                                <rect key="frame" x="9" y="9" width="24" height="24"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="24" id="dYA-Bh-xq0"/>
+                                    <constraint firstAttribute="width" constant="24" id="uc6-zR-3fy"/>
+                                </constraints>
+                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                <state key="normal" image="Back button_black"/>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="sTL-gu-Yr1"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -319,6 +328,8 @@
                             <constraint firstItem="xF2-By-QUB" firstAttribute="top" secondItem="sTL-gu-Yr1" secondAttribute="top" id="MWV-tk-59A"/>
                             <constraint firstItem="xF2-By-QUB" firstAttribute="leading" secondItem="sTL-gu-Yr1" secondAttribute="leading" id="Nwz-8s-4GR"/>
                             <constraint firstAttribute="trailing" secondItem="c85-wh-Duo" secondAttribute="trailing" id="PY0-R1-5O3"/>
+                            <constraint firstItem="0Un-eU-X7z" firstAttribute="top" secondItem="sTL-gu-Yr1" secondAttribute="top" constant="9" id="RcQ-pp-f33"/>
+                            <constraint firstItem="0Un-eU-X7z" firstAttribute="leading" secondItem="sTL-gu-Yr1" secondAttribute="leading" constant="9" id="Rt9-UN-Y7W"/>
                             <constraint firstItem="sTL-gu-Yr1" firstAttribute="trailing" secondItem="xF2-By-QUB" secondAttribute="trailing" id="SnB-li-BVd"/>
                             <constraint firstItem="c85-wh-Duo" firstAttribute="top" secondItem="sTL-gu-Yr1" secondAttribute="top" id="WVR-6I-Q0F"/>
                             <constraint firstAttribute="bottom" secondItem="c85-wh-Duo" secondAttribute="bottom" id="q0H-Mh-NTi"/>
@@ -357,6 +368,7 @@
         <image name="0" width="1600" height="1059"/>
         <image name="Active" width="126" height="126"/>
         <image name="Back button" width="24" height="24"/>
+        <image name="Back button_black" width="24" height="24"/>
         <image name="Logo_of_Unsplash" width="60" height="60"/>
         <image name="ProfileActive" width="75" height="49"/>
         <image name="SharingButton" width="51" height="51"/>

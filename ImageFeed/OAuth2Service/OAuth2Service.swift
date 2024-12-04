@@ -24,10 +24,13 @@ final class OAuth2Service {
 
     static let shared = OAuth2Service()
 
-    init() {}
+    private init() {}
 
     private func makeOAuthTokenRequest(code: String) -> URLRequest? {
-        guard let url = URL(string: "oauth/token", relativeTo: URL(string: baseApiUrl)) else { return nil }
+        guard let url = URL(string: "oauth/token", relativeTo: URL(string: baseApiUrl)) else {
+            print("Failed to create URL with base: \(baseApiUrl)")
+            return nil
+        }
         
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
@@ -43,9 +46,14 @@ final class OAuth2Service {
         
         let parameterArray = parameters.compactMap { (key, value) -> String? in
             guard let encodedValue = value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+                print("Failed to encode parameter value for key: \(key)")
                 return nil
             }
             return "\(key)=\(encodedValue)"
+        }
+        
+        if parameterArray.isEmpty {
+            print("Parameter array is empty after encoding")
         }
         
         urlRequest.httpBody = parameterArray.joined(separator: "&").data(using: .utf8)
@@ -55,6 +63,7 @@ final class OAuth2Service {
     
     func fetchOAuthToken(code: String, completion: @escaping (Result<String, Error>) -> Void) {
         guard let request = makeOAuthTokenRequest(code: code) else {
+            print("Failed to create URLRequest")
             completion(.failure(OAuthError.urlEncodingError))
             return
         }
