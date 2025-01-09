@@ -11,7 +11,10 @@ enum NetworkError: Error {
     case httpStatusCode(Int)
     case urlRequestError(Error)
     case dataNotFound
+    case decodingError(Error)
+    case invalidResponse
 }
+
 
 final class NetworkClient {
     func data(request: URLRequest, handler: @escaping (Result<Data, Error>) -> Void) {
@@ -51,3 +54,42 @@ final class NetworkClient {
         task.resume()
     }
 }
+
+extension URLSession {
+    func objectTask<T: Decodable>(
+        for request: URLRequest,
+        completion: @escaping (Result<T, Error>) -> Void
+    ) -> URLSessionTask {
+        let decoder = JSONDecoder()
+        let task = dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Server response error: \(error.localizedDescription)")
+                completion(.failure(NetworkError.urlRequestError(error)))
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                completion(.failure(NetworkError.invalidResponse))
+                print("Invalid HTTP response")
+                return
+            }
+            
+            guard let data = data else {
+                print("No data received")
+                completion(.failure(NetworkError.dataNotFound))
+                return
+            }
+            do {
+                let object = try decoder.decode(T.self, from: data)
+                completion(.success(object))
+            } catch {
+                print ("Decoding error: \(error)")
+                completion(.failure(NetworkError.decodingError(error)))
+            }
+        }
+        task.resume()
+        return task
+    }
+}
+

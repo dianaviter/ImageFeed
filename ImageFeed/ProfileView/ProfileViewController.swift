@@ -6,12 +6,39 @@
 //
 
 import UIKit
+import Kingfisher
 
 final class ProfileViewController: UIViewController {
+    private let profileService = ProfileService.shared
+    private let profileImageService = ProfileImageService.shared
+    let token = OAuth2TokenStorage().token
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .ypBlackIOS
         setupConstraints()
+        
+        guard let token = token else {
+            print ("Token is nil")
+            return
+        }
+        
+        profileService.fetchProfile(token) { [weak self] result in
+            switch result {
+            case .success(let profile):
+                self?.updateProfile(profile: profile)
+                self?.profileImageService.fetchProfileImage(token) { imageResult in
+                    switch imageResult {
+                    case .success(let profileImage):
+                        self?.updateProfileImage(profileImage: profileImage)
+                    case .failure (let error):
+                        print ("Failed to fetch profile (Image): \(error)")
+                    }
+                }
+            case .failure (let error):
+                print ("Failed to fetch profile: \(error)")
+            }
+        }
     }
     
     @IBAction func didTapLogoutButton(_ sender: Any) {
@@ -46,15 +73,33 @@ final class ProfileViewController: UIViewController {
         ])
     }
     
+    private func updateProfile (profile: ProfileService.Profile) {
+        nameLabel.text = profile.name
+        loginNameLabel.text = profile.loginName
+        descriptionLabel.text = profile.bio
+    }
+    
+    private func updateProfileImage (profileImage: ProfileImageService.ProfileImage) {
+        guard let imageUrlString = profileImage.profileImage.medium,
+              let imageUrl = URL(string: imageUrlString) else {
+            return
+        }
+        avatarImageView.kf.setImage(with: imageUrl,
+                                    placeholder: UIImage(named: "placeholder"))
+    }
+    
     private let avatarImageView: UIImageView = {
-        let image = UIImage(named: "UserPic")
-        let imageView = UIImageView(image: image)
+        let imageView = UIImageView(image: UIImage(named: "UserPic"))
+        imageView.frame = CGRect(x: 100, y: 100, width: 70, height: 70)
+        
+        imageView.layer.cornerRadius = imageView.frame.size.width / 2
+        imageView.clipsToBounds = true
+        
         return imageView
     } ()
     
     private let nameLabel: UILabel = {
         let label = UILabel ()
-        label.text = "Екатерина Новикова"
         label.textColor = .white
         label.font = UIFont(name: "SFProText-Bold", size: 23)
         return label
@@ -62,7 +107,6 @@ final class ProfileViewController: UIViewController {
     
     private let loginNameLabel: UILabel = {
         let label = UILabel ()
-        label.text = "@ekaterina_nov"
         label.textColor = .ypGray
         label.font = UIFont(name: "SFProText-Regular", size: 13)
         return label
@@ -70,7 +114,6 @@ final class ProfileViewController: UIViewController {
     
     private let descriptionLabel: UILabel = {
         let label = UILabel ()
-        label.text = "Hello, world!"
         label.textColor = .white
         label.font = UIFont(name: "SFProText-Regular", size: 13)
         return label
