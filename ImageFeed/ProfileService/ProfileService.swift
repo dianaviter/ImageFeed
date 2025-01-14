@@ -15,13 +15,18 @@ private enum ProfileServiceError: Error {
     case decodingError
 }
 
+enum HttpMethods: String {
+    case get = "GET"
+    case post = "POST"
+}
+
 final class ProfileService {
     private let urlSession = URLSession.shared
     private var task: URLSessionTask?
     var token: String?
     var username: String?
     static let shared = ProfileService()
-    init () {}
+    private init () {}
     
     struct ProfileResult: Decodable {
         let id: String?
@@ -69,7 +74,7 @@ final class ProfileService {
     private func createUrlRequestPublicInfo (authToken: String) -> URLRequest? {
         guard let url = URL(string: "https://api.unsplash.com/me") else { return nil }
         var request = URLRequest(url: url)
-        request.httpMethod = "GET"
+        request.httpMethod = HttpMethods.get.rawValue
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
         return request

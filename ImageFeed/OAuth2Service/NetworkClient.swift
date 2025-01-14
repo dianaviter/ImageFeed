@@ -17,7 +17,7 @@ enum NetworkError: Error {
 
 
 final class NetworkClient {
-    func data(request: URLRequest, handler: @escaping (Result<Data, Error>) -> Void) {
+    private func data(request: URLRequest, handler: @escaping (Result<Data, Error>) -> Void) {
         let fulfillCompletionOnTheMainThread: (Result<Data, Error>) -> Void = { result in
             DispatchQueue.main.async {
                 handler(result)
@@ -60,7 +60,6 @@ extension URLSession {
         for request: URLRequest,
         completion: @escaping (Result<T, Error>) -> Void
     ) -> URLSessionTask {
-        let decoder = JSONDecoder()
         let task = dataTask(with: request) { data, response, error in
             if let error = error {
                 print("Server response error: \(error.localizedDescription)")
@@ -81,6 +80,7 @@ extension URLSession {
                 return
             }
             do {
+                let decoder = JSONDecoder()
                 let object = try decoder.decode(T.self, from: data)
                 completion(.success(object))
             } catch {

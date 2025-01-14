@@ -41,7 +41,7 @@ final class ProfileViewController: UIViewController {
         }
     }
     
-    @IBAction func didTapLogoutButton(_ sender: Any) {
+    @IBAction private func didTapLogoutButton(_ sender: Any) {
         // код для нажатия кнопки logout
     }
     

@@ -5,7 +5,7 @@
 //  Created by Diana Viter on 06.01.2025.
 //
 
-import UIKit
+import Foundation
 
 private enum ProfileServiceError: Error {
     case urlEncodingError
@@ -37,7 +37,7 @@ final class ProfileImageService {
         }
     }
     
-    private func createUrlRequestPrivateInfo (authToken: String) -> URLRequest? {
+    private func createUrlRequestPrivateInfo(authToken: String) -> URLRequest? {
         guard let username = profileService.username else {
             print("Username is nil or empty")
             return nil
@@ -47,13 +47,13 @@ final class ProfileImageService {
             return nil
         }
         var request = URLRequest(url: url)
-        request.httpMethod = "GET"
+        request.httpMethod = HttpMethods.get.rawValue
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
         return request
     }
     
-    func fetchProfileImage (_ token: String, completion: @escaping (Result<ProfileImage, Error>) -> Void) {
+    func fetchProfileImage(_ token: String, completion: @escaping (Result<ProfileImage, Error>) -> Void) {
         assert(Thread.isMainThread)
         if task != nil {
             if token != OAuth2TokenStorage().token {
