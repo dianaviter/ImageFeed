@@ -21,12 +21,17 @@ enum HttpMethods: String {
 }
 
 final class ProfileService {
+    // MARK: - Properties
+    
+    static let shared = ProfileService()
+    private init () {}
+    
     private let urlSession = URLSession.shared
     private var task: URLSessionTask?
     var token: String?
     var username: String?
-    static let shared = ProfileService()
-    private init () {}
+    
+    // MARK: - Profile Model
     
     struct ProfileResult: Decodable {
         let id: String?
@@ -70,6 +75,8 @@ final class ProfileService {
         }
         let bio: String
     }
+    
+    // MARK: - Methods
     
     private func createUrlRequestPublicInfo (authToken: String) -> URLRequest? {
         guard let url = URL(string: "https://api.unsplash.com/me") else { return nil }

@@ -16,12 +16,18 @@ private enum ProfileServiceError: Error {
 }
 
 final class ProfileImageService {
+    // MARK: - Properties
+    
+    static let shared = ProfileImageService()
+    private init () {}
+    
     private let urlSession = URLSession.shared
     private var task: URLSessionTask?
     private let profileService = ProfileService.shared
-    static let shared = ProfileImageService()
     private var imageUrl: URL?
-    init () {}
+    static let didChangeNotification = Notification.Name ("ProfileImageServiceDidChengeNotification")
+    
+    // MARK: - Supporting Models
     
     struct ProfileImageSizes: Codable {
         let small: String?
@@ -36,6 +42,8 @@ final class ProfileImageService {
             case profileImage = "profile_image"
         }
     }
+    
+    // MARK: - Private Methods
     
     private func createUrlRequestPrivateInfo(authToken: String) -> URLRequest? {
         guard let username = profileService.username else {
@@ -52,6 +60,8 @@ final class ProfileImageService {
         request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
         return request
     }
+    
+    // MARK: - Methods
     
     func fetchProfileImage(_ token: String, completion: @escaping (Result<ProfileImage, Error>) -> Void) {
         assert(Thread.isMainThread)
@@ -78,10 +88,10 @@ final class ProfileImageService {
             guard let self = self else { return }
             DispatchQueue.main.async {
                 switch result {
-                case .success (let response):
-                    let profileImage = ProfileImage(profileImage: response.profileImage)
+                case .success(let response):
                     print("Response Data: \(response)")
-                    completion(.success(profileImage))
+                    completion(.success(response))
+                    NotificationCenter.default.post(name: ProfileImageService.didChangeNotification, object: self, userInfo: ["profileImage": response])
                 case .failure(let error):
                     print("Error: \(error)")
                     completion(.failure(error))
