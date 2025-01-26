@@ -11,6 +11,7 @@ private enum OAuthError: Error {
     case urlEncodingError
     case serverResponseError
     case noDataError
+    case invalidRequest
 }
 
 struct OAuthTokenResponseBody: Decodable {
@@ -23,42 +24,64 @@ final class OAuth2Service {
     private let baseApiUrl = "https://unsplash.com"
     
     static let shared = OAuth2Service()
-    private init() {}
+    private let urlSession = URLSession.shared
+    private var task: URLSessionTask? // Переменная для хранения указателя на последнюю созданную задачу. Если активных задач нет, то значение будет nil
+    private var lastCode: String? // Переменная для хранения значения code, которое было передано в последнем созданном запросе
+    
+    private init() {
+        
+    }
     
     func fetchOAuthToken(code: String, completion: @escaping (Result<String, Error>) -> Void) {
+        assert(Thread.isMainThread) // Проверяем, что код выполняется из главного потока
+        if task != nil { //Проверяем, выполняется ли в данный момент POST-запрос
+            if lastCode != code {
+                task?.cancel()
+            } else {
+                completion(.failure(OAuthError.invalidRequest))
+                return
+            }
+        } else {
+            if lastCode == code {
+                completion(.failure(OAuthError.invalidRequest))
+                return
+            }
+        }
+        
+        lastCode = code
         guard let request = makeOAuthTokenRequest(code: code) else {
             print("Failed to create URLRequest")
             completion(.failure(OAuthError.urlEncodingError))
             return
         }
         
-        networkClient.data(request: request) { result in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try JSONDecoder().decode(OAuthTokenResponseBody.self, from: data)
+        let task = urlSession.objectTask(for: request) { [weak self] (result: Result<OAuthTokenResponseBody, Error>) in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let response):
                     self.tokenStorage.token = response.access_token
                     completion(.success(response.access_token))
-                } catch {
-                    print("Decoding error: \(error)")
+                case .failure(let error):
+                    print("Error: \(error)")
                     completion(.failure(error))
                 }
-                
-            case .failure(let error):
-                print("Request error: \(error)")
-                completion(.failure(error))
             }
+            self.task = nil // Обнуляем task, ведь мы завершили обработку
+            self.lastCode = nil // Когда запрос завершился, а мы его обработали, удалим lastCode, чтобы можно было повторить запрос с тем же кодом.
         }
+        self.task = task // Прежде чем запускать выполнение запроса в пункте 17, нужно зафиксировать состояние, сохранив ссылку на task — иначе возможны гонки
+        task.resume() // Запускаем запрос на выполнение
     }
     
     private func makeOAuthTokenRequest(code: String) -> URLRequest? {
         guard let url = URL(string: "oauth/token", relativeTo: URL(string: baseApiUrl)) else {
-            print("Failed to create URL with base: \(baseApiUrl)")
+            assertionFailure("Failed to create URL")
             return nil
         }
         
         var urlRequest = URLRequest(url: url)
-        urlRequest.httpMethod = "POST"
+        urlRequest.httpMethod = HttpMethods.post.rawValue
         urlRequest.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         
         let parameters = [
