@@ -70,7 +70,8 @@ extension URLSession {
             guard let httpResponse = response as? HTTPURLResponse,
                   (200...299).contains(httpResponse.statusCode) else {
                 completion(.failure(NetworkError.invalidResponse))
-                print("Invalid HTTP response")
+                print("Invalid HTTP response: \(response.debugDescription)")
+                
                 return
             }
             
@@ -79,6 +80,11 @@ extension URLSession {
                 completion(.failure(NetworkError.dataNotFound))
                 return
             }
+            
+            if let responseString = String(data: data, encoding: .utf8) {
+                        print("Server responce: \(responseString)")
+                    }
+            
             do {
                 let decoder = JSONDecoder()
                 let object = try decoder.decode(T.self, from: data)

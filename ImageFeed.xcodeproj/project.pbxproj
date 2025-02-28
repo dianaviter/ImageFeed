@@ -793,8 +793,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/relatedcode/ProgressHUD";
 			requirement = {
-				kind = exactVersion;
-				version = 14.1.1;
+				kind = upToNextMajorVersion;
+				minimumVersion = 14.1.1;
 			};
 		};
 		12984D882D2FEEDF009B6563 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {

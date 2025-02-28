@@ -24,7 +24,7 @@ struct Photo {
     let welcomeDescription: String?
     let thumbImageURL: String
     let largeImageURL: String
-    let isLiked: Bool
+    var isLiked: Bool
 }
 
 struct PhotoResult: Codable {
@@ -57,15 +57,20 @@ struct Urls: Codable {
     let thumb: String?
 }
 
+struct EmptyResponse: Decodable {}
+
+
 final class ImagesListService {
     // MARK: - Properties
     
-    var lastLoadedPage: Int = 0 //номер последней скачанной страницы
-    private (set) var photos: [Photo] = [] //список уже скачанных фотографий
+    var lastLoadedPage: Int = 0
+    private (set) var photos: [Photo] = []
     static let didChangeNotification = Notification.Name("ImagesListServiceDidChange")
     private var task: URLSessionTask?
     private var request: URLRequest?
-    private var urlSession: URLSession?
+    private var urlSession = URLSession.shared
+    let tokenStorage = OAuth2TokenStorage ()
+    private let baseURL = "https://api.unsplash.com/photos"
     
     // MARK: - Private Methods
     
@@ -77,7 +82,8 @@ final class ImagesListService {
         return request
     }
     
-    private func fetchPhotosNextPage(_ token: String, completion: @escaping (Result<[Photo], Error>) -> Void) {
+    func fetchPhotosNextPage(_ token: String, completion: @escaping (Result<[Photo], Error>) -> Void) {
+        print("Photos request \(lastLoadedPage + 1)")
         guard task == nil else {
             completion(.failure(ImagesListError.invalidRequest))
             return
@@ -89,45 +95,101 @@ final class ImagesListService {
             return
         }
         
-        let task = urlSession?.objectTask(for: request) { [weak self] (result: Result<[PhotoResult], Error>) in
+        print("Sending request: \(request.url?.absoluteString ?? "URL missing")")
+        
+        let task = urlSession.objectTask(for: request) { [weak self] (result: Result<[PhotoResult], Error>) in
             guard let self = self else { return }
             DispatchQueue.main.async {
                 defer { self.task = nil }
                 switch result {
                 case .success(let response):
                     let newPhotos: [Photo] = response.compactMap { photoResult in
+                        
                         guard let id = photoResult.id,
                               let width = photoResult.width,
                               let height = photoResult.height,
-                              let createdAt = photoResult.createdAt,
-                              let welcomeDescription = photoResult.description,
                               let thumbImageURL = photoResult.urls?.thumb,
-                              let largeImageURL = photoResult.urls?.full,
-                              let isLiked = photoResult.likedByUser
-                        else { return nil }
+                              let largeImageURL = photoResult.urls?.full
+                        else {
+                            return nil
+                        }
                         
-                        return Photo(
+                        let parsedPhoto = Photo(
                             id: id,
                             size: CGSize(width: width, height: height),
-                            createdAt: createdAt,
-                            welcomeDescription: welcomeDescription,
+                            createdAt: photoResult.createdAt, // Может быть nil — теперь это не критично
+                            welcomeDescription: photoResult.description, // Может быть nil — теперь это не критично
                             thumbImageURL: thumbImageURL,
                             largeImageURL: largeImageURL,
-                            isLiked: isLiked)
-                    }
+                            isLiked: photoResult.likedByUser ?? false // если nil, то будет false
+                        )
                         
+                        return parsedPhoto
+                    }
+                    
+                    print("Uploaded \(newPhotos.count) new photos")
                     self.photos.append(contentsOf: newPhotos)
                     self.lastLoadedPage += 1
-                        NotificationCenter.default.post(name: ImagesListService.didChangeNotification, object: nil)
-                        completion(.success(newPhotos))
-                    case .failure(let error):
-                        print ("Error: \(error)")
-                        completion(.failure(error))
-                    }
+                    NotificationCenter.default.post(name: ImagesListService.didChangeNotification, object: nil)
+                    completion(.success(newPhotos))
+                case .failure(let error):
+                    print ("Error: \(error)")
+                    completion(.failure(error))
                 }
+            }
         }
-        task?.resume()
+        task.resume()
     }
+    
+    func changeLike(photoId: String, isLike: Bool, _ completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let url = URL(string: "https://api.unsplash.com/photos/\(photoId)/like") else {
+            completion(.failure(ImagesListError.urlEncodingError))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = isLike ? "POST" : "DELETE"
+        request.setValue("Bearer \(tokenStorage.token ?? "")", forHTTPHeaderField: "Authorization")
+        
+        print("Sending request: \(request.httpMethod ?? "") \(url.absoluteString)")
+        
+        let task = urlSession.objectTask(for: request) { [weak self] (result: Result<EmptyResponse, Error>) in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                
+                switch result {
+                case .success:
+                    print("Like \(isLike ? "added" : "deleted") successfully")
+                    
+                    if let index = self.photos.firstIndex(where: { $0.id == photoId }) {
+                        let photo = self.photos[index]
+                        
+                        let newPhoto = Photo(
+                            id: photo.id,
+                            size: photo.size,
+                            createdAt: photo.createdAt,
+                            welcomeDescription: photo.welcomeDescription,
+                            thumbImageURL: photo.thumbImageURL,
+                            largeImageURL: photo.largeImageURL,
+                            isLiked: !photo.isLiked
+                        )
+                        
+                        self.photos[index] = newPhoto
+                        
+                        NotificationCenter.default.post(name: ImagesListService.didChangeNotification, object: nil)
+                    }
+                    
+                    completion(.success(()))
+                    
+                case .failure(let error):
+                    print("Request error: \(error.localizedDescription)")
+                    completion(.failure(error))
+                }
+            }
+        }
+        task.resume()
+    }
+
     
     // MARK: - Methods
     
