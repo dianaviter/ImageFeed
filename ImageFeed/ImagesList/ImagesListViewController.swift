@@ -58,7 +58,7 @@ final class ImagesListViewController: UIViewController {
         }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        print("🔥 prepare(for segue:) вызван с identifier:", segue.identifier ?? "nil")
+        print("prepare(for segue:) called with identifier:", segue.identifier ?? "nil")
         if segue.identifier == showSingleImageSegueIdentifier {
             guard
                 let viewController = segue.destination as? SingleImageViewController,
@@ -74,7 +74,7 @@ final class ImagesListViewController: UIViewController {
                 return
             }
             viewController.imageURL = fullImageUrl
-            print("Передаем imageURL:", fullImageUrl)
+            print("Sending imageURL:", fullImageUrl)
         } else {
             super.prepare(for: segue, sender: sender)
         }
@@ -148,7 +148,7 @@ extension ImagesListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print("🔥 Ячейка выбрана, indexPath:", indexPath)
+        print("Cell is active, indexPath:", indexPath)
         performSegue(withIdentifier: showSingleImageSegueIdentifier, sender: indexPath)
     }
     

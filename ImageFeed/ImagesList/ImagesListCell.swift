@@ -49,17 +49,17 @@ final class ImagesListCell: UITableViewCell {
                     .transition(.fade(0.3))
                 ],
                 progressBlock: { receivedSize, totalSize in
-                    print("Загрузка: \(receivedSize) из \(totalSize)")
+                    print("Loading: \(receivedSize) from \(totalSize)")
                 }
             ) { result in
                 switch result {
                 case .success(let value):
-                    print("Загружено: \(value.source.url?.absoluteString ?? "")")
+                    print("Loaded: \(value.source.url?.absoluteString ?? "")")
                     DispatchQueue.main.async {
                         self.updateCellHeight?()
                     }
                 case .failure(let error):
-                    print("Ошибка загрузки: \(error.localizedDescription)")
+                    print("Loading error: \(error.localizedDescription)")
                 }
             }
         } else {

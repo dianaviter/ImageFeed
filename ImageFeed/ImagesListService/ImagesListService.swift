@@ -117,11 +117,11 @@ final class ImagesListService {
                         let parsedPhoto = Photo(
                             id: id,
                             size: CGSize(width: width, height: height),
-                            createdAt: photoResult.createdAt, // Может быть nil — теперь это не критично
-                            welcomeDescription: photoResult.description, // Может быть nil — теперь это не критично
+                            createdAt: photoResult.createdAt,
+                            welcomeDescription: photoResult.description,
                             thumbImageURL: thumbImageURL,
                             largeImageURL: largeImageURL,
-                            isLiked: photoResult.likedByUser ?? false // если nil, то будет false
+                            isLiked: photoResult.likedByUser ?? false
                         )
                         
                         return parsedPhoto

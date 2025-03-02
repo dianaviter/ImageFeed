@@ -8,8 +8,32 @@
 import UIKit
 import ProgressHUD
 
-final class SplashViewController: UIViewController, AuthViewControllerDelegate {
-    private let  showAuthenticationScreenSegueIdentifier = "ShowAuthenticationScreen"
+final class SplashViewController: UIViewController, AuthViewControllerDelegate, WebViewViewControllerDelegate {
+
+    func authViewController(_ vc: AuthViewController, didAuthenticateWithCode code: String) {
+        print("Code received in authViewController: \(code)")
+        
+        oauth2Service.fetchOAuthToken(code: code) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success:
+                print("Token received")
+                self.switchToTabBarController()
+            case .failure:
+                print("Failed to receive token")
+                self.showErrorAlert()
+            }
+        }
+    }
+
+    func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
+        print("Authorization is cancelled by user")
+        vc.dismiss(animated: true)
+        showErrorAlert()
+    }
+    
+    
+    private let showAuthenticationScreenSegueIdentifier = "ShowAuthenticationScreen"
 
     private let oauth2Service = OAuth2Service.shared
     private let oauth2TokenStorage = OAuth2TokenStorage()
@@ -117,13 +141,13 @@ final class SplashViewController: UIViewController, AuthViewControllerDelegate {
 }
 
 extension SplashViewController {
-    private func didAuthenticate(_ vc: AuthViewController) {
+    private func didAuthenticate(_ vc: WebViewViewController) {
         vc.dismiss(animated: true)
         guard let token = oauth2TokenStorage.token else { return }
         fetchProfile(token)
     }
     
-    func authViewController(_ vc: AuthViewController, didAuthenticateWithCode code: String) {
+    func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
         dismiss(animated: true) { [weak self] in
             guard let self = self else { return }
             self.fetchOAuthToken(code)
@@ -137,7 +161,6 @@ extension SplashViewController {
             case .success:
                 self.switchToTabBarController()
             case .failure:
-                // TODO [Sprint 11]
                 break
             }
         }

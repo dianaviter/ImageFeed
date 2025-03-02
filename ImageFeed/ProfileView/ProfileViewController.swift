@@ -24,6 +24,9 @@ final class ProfileViewController: UIViewController {
         setupConstraints()
         observeProfileImageChanges()
         fetchProfileData()
+        
+        logoutButton.addTarget(self, action: #selector(didTapLogoutButton), for: .touchUpInside)
+        view.addSubview(logoutButton)
     }
     
     deinit {
@@ -34,8 +37,19 @@ final class ProfileViewController: UIViewController {
     
     // MARK: - Actions
     
-    @IBAction private func didTapLogoutButton(_ sender: Any) {
-        // код для нажатия кнопки logout
+    @objc private func didTapLogoutButton() {
+        OAuth2Service.shared.logout()
+        
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        guard let authVC = storyboard.instantiateViewController(identifier: "AuthViewController") as? AuthViewController else {
+            print("Failed to create AuthViewController")
+            return
+        }
+        authVC.modalPresentationStyle = .fullScreen
+        if let window = UIApplication.shared.windows.first {
+            window.rootViewController = authVC
+            window.makeKeyAndVisible()
+        }
     }
     
     // MARK: - Private Methods
@@ -159,5 +173,6 @@ final class ProfileViewController: UIViewController {
         let imageButton = UIImage(named: "Exit")
         button.setImage(imageButton, for: .normal)
         return button
+        
     } ()
 }

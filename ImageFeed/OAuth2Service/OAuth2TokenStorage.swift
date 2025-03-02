@@ -1,16 +1,9 @@
-//
-//  OAuth2TokenStorage.swift
-//  ImageFeed
-//
-//  Created by Diana Viter on 01.12.2024.
-//
-
 import Foundation
 import SwiftKeychainWrapper
 
 final class OAuth2TokenStorage {
-    let tokenKey = "authToken"
-    
+    private let tokenKey = "authToken"
+
     var token: String? {
         get {
             KeychainWrapper.standard.string(forKey: tokenKey)
@@ -18,12 +11,18 @@ final class OAuth2TokenStorage {
         set {
             if let token = newValue {
                 let isSuccess = KeychainWrapper.standard.set(token, forKey: tokenKey)
-                
                 guard isSuccess else {
-                    print ("Error saving token")
+                    print("Failed to save token in Keychain")
                     return
                 }
+            } else {
+                KeychainWrapper.standard.removeObject(forKey: tokenKey)
+                print("Token is deleted from Keychain")
             }
         }
+    }
+    
+    func isTokenAvailable() -> Bool {
+        return KeychainWrapper.standard.string(forKey: tokenKey) != nil
     }
 }

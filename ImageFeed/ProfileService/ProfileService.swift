@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 private enum ProfileServiceError: Error {
     case urlEncodingError
@@ -131,4 +132,5 @@ final class ProfileService {
         self.token = token
         task.resume()
     }
+    
 }

@@ -1,4 +1,12 @@
 //
+//  OAuthError.swift
+//  ImageFeed
+//
+//  Created by Diana Viter on 01.03.2025.
+//
+
+
+//
 //  OAuth2Service.swift
 //  ImageFeed
 //
@@ -49,7 +57,7 @@ final class OAuth2Service {
         
         lastCode = code
         guard let request = makeOAuthTokenRequest(code: code) else {
-            print("Failed to create URLRequest")
+            print("🚨 Failed to create URLRequest")
             completion(.failure(OAuthError.urlEncodingError))
             return
         }
@@ -59,11 +67,11 @@ final class OAuth2Service {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let response):
-                    print("Token received: \(response.access_token)")
+                    print("✅ Token received: \(response.access_token)")
                     self.tokenStorage.token = response.access_token
                     completion(.success(response.access_token))
                 case .failure(let error):
-                    print("Error fetching token: \(error)")
+                    print("❌ Error fetching token: \(error)")
                     completion(.failure(error))
                 }
             }
@@ -74,6 +82,7 @@ final class OAuth2Service {
         task.resume()
     }
 
+    /// ✅ Метод выхода из аккаунта
     func logout() {
         print("🚪 Пользователь вышел из аккаунта, токен удалён")
         tokenStorage.token = nil
@@ -99,14 +108,14 @@ final class OAuth2Service {
         
         let parameterArray = parameters.compactMap { (key, value) -> String? in
             guard let encodedValue = value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-                print("Failed to encode parameter value for key: \(key)")
+                print("🚨 Failed to encode parameter value for key: \(key)")
                 return nil
             }
             return "\(key)=\(encodedValue)"
         }
         
         if parameterArray.isEmpty {
-            print("Parameter array is empty after encoding")
+            print("🚨 Parameter array is empty after encoding")
         }
         
         urlRequest.httpBody = parameterArray.joined(separator: "&").data(using: .utf8)
