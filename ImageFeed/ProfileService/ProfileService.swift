@@ -39,7 +39,7 @@ final class ProfileService {
         let updatedAt: String?
         let username: String
         let firstName: String
-        let lastName: String
+        let lastName: String?
         let twitterUsername: String?
         let portfolioUrl: URL?
         let bio: String?
@@ -67,14 +67,14 @@ final class ProfileService {
     struct Profile: Decodable {
         let username: String
         let firstName: String
-        let lastName: String
+        var lastName: String?
         var name: String {
-            return firstName + " " + lastName
+            return firstName + " " + (lastName ?? "")
         }
         var loginName: String {
             return "@" + username
         }
-        let bio: String
+        var bio: String?
     }
     
     // MARK: - Methods

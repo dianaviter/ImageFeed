@@ -65,26 +65,22 @@ final class ProfileImageService {
     
     func fetchProfileImage(_ token: String, completion: @escaping (Result<ProfileImage, Error>) -> Void) {
         assert(Thread.isMainThread)
-        if task != nil {
-            if token != OAuth2TokenStorage().token {
-                task?.cancel()
-            } else {
-                completion(.failure(ProfileServiceError.invalidRequest))
-                return
-            }
-        } else {
-            if token == OAuth2TokenStorage().token {
-                completion (.failure(ProfileServiceError.invalidRequest))
-            }
+        if let currentTask = task, token != OAuth2TokenStorage().token {
+            currentTask.cancel()
+        }
+        
+        guard token == OAuth2TokenStorage().token else {
+            completion(.failure(ProfileServiceError.invalidRequest))
+            return
         }
         
         guard let request = createUrlRequestPrivateInfo(authToken: token) else {
-            print ("Failed to create URLRequest (Image)")
+            print("Failed to create URLRequest (Image)")
             completion(.failure(ProfileServiceError.urlEncodingError))
             return
         }
         
-        let task = urlSession.objectTask(for: request) { [weak self] (result: Result<ProfileImage, Error>) in
+        task = urlSession.objectTask(for: request) { [weak self] (result: Result<ProfileImage, Error>) in
             guard let self = self else { return }
             DispatchQueue.main.async {
                 switch result {
@@ -99,6 +95,6 @@ final class ProfileImageService {
                 self.task = nil
             }
         }
-        task.resume()
+        task?.resume()
     }
 }
