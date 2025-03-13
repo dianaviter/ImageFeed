@@ -26,13 +26,8 @@ final class ProfileViewController: UIViewController {
         
         logoutButton.addTarget(self, action: #selector(didTapLogoutButton), for: .touchUpInside)
         view.addSubview(logoutButton)
-    }
-    
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        if !isDataLoaded {
-            addGradients()
-        }
+        
+        addGradients()
     }
     
     deinit {
