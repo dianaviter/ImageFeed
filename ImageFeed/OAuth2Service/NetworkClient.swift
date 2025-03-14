@@ -15,6 +15,19 @@ enum NetworkError: Error {
     case invalidResponse
 }
 
+struct AnyKey: CodingKey {
+    var stringValue: String
+    var intValue: Int?
+
+    init?(stringValue: String) {
+        self.stringValue = stringValue
+    }
+
+    init?(intValue: Int) {
+        self.intValue = intValue
+        self.stringValue = "\(intValue)"
+    }
+}
 
 final class NetworkClient {
     private func data(request: URLRequest, handler: @escaping (Result<Data, Error>) -> Void) {
@@ -87,7 +100,17 @@ extension URLSession {
             
             do {
                 let decoder = JSONDecoder()
-                decoder.keyDecodingStrategy = .convertFromSnakeCase
+                decoder.keyDecodingStrategy = .custom { codingKeys in
+                    guard let lastKey = codingKeys.last else {
+                        return codingKeys.last ?? AnyKey(stringValue: "")!
+                    }
+
+                    if lastKey.stringValue == "created_at" {
+                        return AnyKey(stringValue: "createdAt") ?? lastKey
+                    }
+
+                    return lastKey
+                }
                 decoder.dateDecodingStrategy = .iso8601
                 let object = try decoder.decode(T.self, from: data)
                 print("Decoded object: \(object)")
