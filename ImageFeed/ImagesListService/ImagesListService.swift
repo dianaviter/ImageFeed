@@ -64,7 +64,7 @@ final class ImagesListService {
     // MARK: - Properties
     
     var lastLoadedPage: Int = 0
-    private (set) var photos: [Photo] = []
+    private(set) var photos: [Photo] = []
     static let didChangeNotification = Notification.Name("ImagesListServiceDidChange")
     private var task: URLSessionTask?
     private var request: URLRequest?
@@ -103,18 +103,25 @@ final class ImagesListService {
                 defer { self.task = nil }
                 switch result {
                 case .success(let response):
+                    print("Decoded Photo Results: \(response)")
+
                     let newPhotos: [Photo] = response.compactMap { photoResult in
-                        
                         guard let id = photoResult.id,
                               let width = photoResult.width,
                               let height = photoResult.height,
                               let thumbImageURL = photoResult.urls?.thumb,
-                              let largeImageURL = photoResult.urls?.full
-                        else {
+                              let largeImageURL = photoResult.urls?.full else {
+                            print("Skipping photo due to missing essential fields")
                             return nil
                         }
-                        
-                        let parsedPhoto = Photo(
+
+                        if let createdAt = photoResult.createdAt {
+                            print("Decoded createdAt for photo \(id): \(createdAt)")
+                        } else {
+                            print("createdAt is nil for photo \(id)")
+                        }
+
+                        return Photo(
                             id: id,
                             size: CGSize(width: width, height: height),
                             createdAt: photoResult.createdAt,
@@ -123,17 +130,16 @@ final class ImagesListService {
                             largeImageURL: largeImageURL,
                             isLiked: photoResult.likedByUser ?? false
                         )
-                        
-                        return parsedPhoto
                     }
-                    
+
                     print("Uploaded \(newPhotos.count) new photos")
                     self.photos.append(contentsOf: newPhotos)
                     self.lastLoadedPage += 1
                     NotificationCenter.default.post(name: ImagesListService.didChangeNotification, object: nil)
                     completion(.success(newPhotos))
+
                 case .failure(let error):
-                    print ("Error: \(error)")
+                    print("Error decoding photos: \(error)")
                     completion(.failure(error))
                 }
             }

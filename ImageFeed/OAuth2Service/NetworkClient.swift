@@ -87,7 +87,10 @@ extension URLSession {
             
             do {
                 let decoder = JSONDecoder()
+                decoder.keyDecodingStrategy = .convertFromSnakeCase
+                decoder.dateDecodingStrategy = .iso8601
                 let object = try decoder.decode(T.self, from: data)
+                print("Decoded object: \(object)")
                 completion(.success(object))
             } catch {
                 print ("Decoding error: \(error)")

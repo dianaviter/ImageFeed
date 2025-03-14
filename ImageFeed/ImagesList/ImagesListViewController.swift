@@ -15,10 +15,10 @@ final class ImagesListViewController: UIViewController {
     var photos: [Photo] = []
     var tokenStorage = OAuth2TokenStorage()
     
-    private lazy var dateFormatter: DateFormatter = {
+    private let displayDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateStyle = .long
-        formatter.timeStyle = .none
+        formatter.dateFormat = "dd.MM.yyyy"
+        formatter.locale = Locale(identifier: "ru_RU")
         return formatter
     }()
     
@@ -30,32 +30,32 @@ final class ImagesListViewController: UIViewController {
         tableView.contentInset = UIEdgeInsets(top: 12, left: 0, bottom: 12, right: 0)
         
         NotificationCenter.default.addObserver(
-                    self,
-                    selector: #selector(didReceivePhotosUpdate),
-                    name: ImagesListService.didChangeNotification,
-                    object: nil
-                    )
+            self,
+            selector: #selector(didReceivePhotosUpdate),
+            name: ImagesListService.didChangeNotification,
+            object: nil
+        )
         
         imagesListService.fetchPhotosNextPage(tokenStorage.token ?? "") { _ in }
     }
     
     deinit {
-            NotificationCenter.default.removeObserver(self, name: ImagesListService.didChangeNotification, object: nil)
-        }
+        NotificationCenter.default.removeObserver(self, name: ImagesListService.didChangeNotification, object: nil)
+    }
+    
+    @objc private func didReceivePhotosUpdate() {
+        let oldCount = photos.count
+        photos = imagesListService.photos
+        let newCount = photos.count
         
-        @objc private func didReceivePhotosUpdate() {
-            let oldCount = photos.count
-            photos = imagesListService.photos
-            let newCount = photos.count
-
-            guard newCount > oldCount else { return }
-
-            let indexPaths = (oldCount..<newCount).map { IndexPath(row: $0, section: 0) }
-            
-            tableView.performBatchUpdates({
-                tableView.insertRows(at: indexPaths, with: .automatic)
-            }, completion: nil)
-        }
+        guard newCount > oldCount else { return }
+        
+        let indexPaths = (oldCount..<newCount).map { IndexPath(row: $0, section: 0) }
+        
+        tableView.performBatchUpdates({
+            tableView.insertRows(at: indexPaths, with: .automatic)
+        }, completion: nil)
+    }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         print("prepare(for segue:) called with identifier:", segue.identifier ?? "nil")
@@ -67,7 +67,6 @@ final class ImagesListViewController: UIViewController {
                 assertionFailure("Invalid segue destination")
                 return
             }
-            
             let photo = photos[indexPath.row]
             guard let fullImageUrl = URL(string: photo.largeImageURL) else {
                 assertionFailure("Invalid image URL")
@@ -80,8 +79,7 @@ final class ImagesListViewController: UIViewController {
         }
     }
 }
-
-
+    
 extension ImagesListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return photos.count
@@ -101,7 +99,7 @@ extension ImagesListViewController: UITableViewDataSource {
             }
         }
         cell.delegate = self
-        cell.configure(with: photo, dateFormatter: dateFormatter)
+        cell.configure(with: photo, dateFormatter: displayDateFormatter)
         return cell
     }
 }

@@ -16,6 +16,9 @@ final class ProfileViewController: UIViewController {
     private var isDataLoaded = false
 
     // MARK: - Lifecycle Methods
+    override func viewDidLayoutSubviews() {
+        animateGradients()
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -200,7 +203,7 @@ final class ProfileViewController: UIViewController {
         ]
         gradientForNameLabel?.startPoint = CGPoint(x: 0, y: 0.5)
         gradientForNameLabel?.endPoint = CGPoint(x: 1, y: 0.5)
-        gradientForNameLabel?.cornerRadius = 8
+        gradientForNameLabel?.cornerRadius = 12
         nameLabel.layer.addSublayer(gradientForNameLabel ?? CAGradientLayer())
         
         gradientForLoginNameLabel = CAGradientLayer()
@@ -228,13 +231,11 @@ final class ProfileViewController: UIViewController {
         gradientForDescriptionLabel?.endPoint = CGPoint(x: 1, y: 0.5)
         gradientForDescriptionLabel?.cornerRadius = 8
         descriptionLabel.layer.addSublayer(gradientForDescriptionLabel ?? CAGradientLayer())
-        
-        animateGradients()
     }
     
     private func animateGradients() {
         let gradientChangeAnimation = CABasicAnimation(keyPath: "locations")
-        gradientChangeAnimation.duration = 3.0
+        gradientChangeAnimation.duration = 2.0
         gradientChangeAnimation.repeatCount = .infinity
         gradientChangeAnimation.fromValue = [0, 0.1, 0.3]
         gradientChangeAnimation.toValue = [0, 0.8, 1]
@@ -276,6 +277,7 @@ final class ProfileViewController: UIViewController {
     
     private let nameLabel: UILabel = {
         let label = UILabel ()
+        label.text = "Name Surname"
         label.textColor = .white
         label.font = UIFont(name: "SFProText-Bold", size: 23)
         return label
@@ -283,6 +285,7 @@ final class ProfileViewController: UIViewController {
     
     private let loginNameLabel: UILabel = {
         let label = UILabel ()
+        label.text = "@yourloginname"
         label.textColor = .ypGray
         label.font = UIFont(name: "SFProText-Regular", size: 13)
         return label
@@ -290,6 +293,7 @@ final class ProfileViewController: UIViewController {
     
     private let descriptionLabel: UILabel = {
         let label = UILabel ()
+        label.text = "Your description"
         label.textColor = .white
         label.font = UIFont(name: "SFProText-Regular", size: 13)
         return label
@@ -299,7 +303,7 @@ final class ProfileViewController: UIViewController {
         let button = UIButton ()
         let imageButton = UIImage(named: "Exit")
         button.setImage(imageButton, for: .normal)
-        button.isHidden = true // Скрываем кнопку до загрузки данных
+        button.isHidden = true
         return button
     } ()
 }
