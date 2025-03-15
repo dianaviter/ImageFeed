@@ -18,11 +18,11 @@ enum NetworkError: Error {
 struct AnyKey: CodingKey {
     var stringValue: String
     var intValue: Int?
-
+    
     init?(stringValue: String) {
         self.stringValue = stringValue
     }
-
+    
     init?(intValue: Int) {
         self.intValue = intValue
         self.stringValue = "\(intValue)"
@@ -95,22 +95,21 @@ extension URLSession {
             }
             
             if let responseString = String(data: data, encoding: .utf8) {
-                        print("Server responce: \(responseString)")
-                    }
+                print("Server responce: \(responseString)")
+            }
             
             do {
                 let decoder = JSONDecoder()
                 decoder.keyDecodingStrategy = .custom { codingKeys in
                     guard let lastKey = codingKeys.last else {
-                        return codingKeys.last ?? AnyKey(stringValue: "")!
+                        fatalError("No last key found in codingKeys")
                     }
-
                     if lastKey.stringValue == "created_at" {
-                        return AnyKey(stringValue: "createdAt") ?? lastKey
+                        return AnyKey(stringValue: "createdAt")!
                     }
-
                     return lastKey
                 }
+                
                 decoder.dateDecodingStrategy = .iso8601
                 let object = try decoder.decode(T.self, from: data)
                 print("Decoded object: \(object)")

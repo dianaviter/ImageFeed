@@ -17,7 +17,7 @@ final class ImagesListViewController: UIViewController {
     
     private let displayDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "dd.MM.yyyy"
+        formatter.dateFormat = "dd MMMM yyyy"
         formatter.locale = Locale(identifier: "ru_RU")
         return formatter
     }()
@@ -79,7 +79,7 @@ final class ImagesListViewController: UIViewController {
         }
     }
 }
-    
+
 extension ImagesListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return photos.count
@@ -107,24 +107,28 @@ extension ImagesListViewController: UITableViewDataSource {
 extension ImagesListViewController: ImagesListCellDelegate {
     func imageListCellDidTapLike(_ cell: ImagesListCell) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
-        let photo = photos[indexPath.row]
+        var photo = photos[indexPath.row]
         
-        cell.setIsLiked(!photo.isLiked)
+        let newLikeStatus = !photo.isLiked
+        photo.isLiked = newLikeStatus
+        photos[indexPath.row] = photo
+        cell.setIsLiked(newLikeStatus)
+        
         UIBlockingProgressHUD.show()
-        imagesListService.changeLike(photoId: photo.id, isLike: !photo.isLiked) { [weak self] result in
+        
+        imagesListService.changeLike(photoId: photo.id, isLike: newLikeStatus) { [weak self] result in
             guard let self = self else { return }
             
             DispatchQueue.main.async {
+                UIBlockingProgressHUD.dismiss()
                 switch result {
                 case .success:
-                    if let index = self.photos.firstIndex(where: { $0.id == photo.id }) {
-                        var newPhoto = self.photos[index]
-                        newPhoto.isLiked.toggle()
-                        self.photos[index] = newPhoto
-                        UIBlockingProgressHUD.dismiss()
-                    }
-                case .failure:
-                    UIBlockingProgressHUD.dismiss()
+                    print("Like status updated successfully")
+                    break
+                case .failure(let error):
+                    print("Failed to update like status: \(error)")
+                    photo.isLiked.toggle()
+                    self.photos[indexPath.row] = photo
                     cell.setIsLiked(photo.isLiked)
                 }
             }

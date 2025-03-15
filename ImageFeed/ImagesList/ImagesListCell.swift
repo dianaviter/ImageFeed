@@ -25,7 +25,7 @@ final class ImagesListCell: UITableViewCell {
     
     private let displayDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "dd.MM.yyyy"
+        formatter.dateFormat = "dd MMMM yyyy"
         formatter.locale = Locale(identifier: "ru_RU")
         return formatter
     }()
@@ -56,8 +56,7 @@ final class ImagesListCell: UITableViewCell {
             print("Error: createdAt is nil for photo with ID: \(photo.id)")
         }
         
-        let likeImage = photo.isLiked ? UIImage(named: "Active") : UIImage(named: "NoActive")
-        likeButton.setImage(likeImage, for: .normal)
+        setIsLiked(photo.isLiked)
         
         cellImage.kf.indicatorType = .activity
         

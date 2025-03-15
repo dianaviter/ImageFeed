@@ -37,7 +37,6 @@ final class ProfileViewController: UIViewController {
         if let observer = profileImageServiceObserver {
             NotificationCenter.default.removeObserver(observer)
         }
-        removeGradients()
     }
     
     // MARK: - Actions
