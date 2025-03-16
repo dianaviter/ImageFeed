@@ -15,6 +15,19 @@ enum NetworkError: Error {
     case invalidResponse
 }
 
+struct AnyKey: CodingKey {
+    var stringValue: String
+    var intValue: Int?
+    
+    init?(stringValue: String) {
+        self.stringValue = stringValue
+    }
+    
+    init?(intValue: Int) {
+        self.intValue = intValue
+        self.stringValue = "\(intValue)"
+    }
+}
 
 final class NetworkClient {
     private func data(request: URLRequest, handler: @escaping (Result<Data, Error>) -> Void) {
@@ -70,7 +83,8 @@ extension URLSession {
             guard let httpResponse = response as? HTTPURLResponse,
                   (200...299).contains(httpResponse.statusCode) else {
                 completion(.failure(NetworkError.invalidResponse))
-                print("Invalid HTTP response")
+                print("Invalid HTTP response: \(response.debugDescription)")
+                
                 return
             }
             
@@ -79,9 +93,26 @@ extension URLSession {
                 completion(.failure(NetworkError.dataNotFound))
                 return
             }
+            
+            if let responseString = String(data: data, encoding: .utf8) {
+                print("Server responce: \(responseString)")
+            }
+            
             do {
                 let decoder = JSONDecoder()
+                decoder.keyDecodingStrategy = .custom { codingKeys in
+                    guard let lastKey = codingKeys.last else {
+                        return codingKeys.last ?? AnyKey(stringValue: "")!
+                    }
+
+                    if lastKey.stringValue == "created_at" {
+                        return AnyKey(stringValue: "createdAt") ?? lastKey
+                    }
+                    return lastKey
+                }
+                decoder.dateDecodingStrategy = .iso8601
                 let object = try decoder.decode(T.self, from: data)
+                print("Decoded object: \(object)")
                 completion(.success(object))
             } catch {
                 print ("Decoding error: \(error)")

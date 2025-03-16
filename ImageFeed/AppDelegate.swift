@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import ProgressHUD
 
 @main
 final class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -21,6 +22,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         )
         sceneConfiguration.delegateClass = SceneDelegate.self
         return sceneConfiguration
+        
     }
     
     // MARK: UISceneSession Lifecycle
@@ -32,6 +34,14 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
     
-    
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+    ) -> Bool {
+        ProgressHUD.animationType = .activityIndicator
+        ProgressHUD.colorHUD = .black
+        ProgressHUD.colorAnimation = .lightGray
+        return true
+    }
 }
 
