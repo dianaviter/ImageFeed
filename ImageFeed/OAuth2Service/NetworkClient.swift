@@ -102,14 +102,14 @@ extension URLSession {
                 let decoder = JSONDecoder()
                 decoder.keyDecodingStrategy = .custom { codingKeys in
                     guard let lastKey = codingKeys.last else {
-                        fatalError("No last key found in codingKeys")
+                        return codingKeys.last ?? AnyKey(stringValue: "")!
                     }
+
                     if lastKey.stringValue == "created_at" {
-                        return AnyKey(stringValue: "createdAt")!
+                        return AnyKey(stringValue: "createdAt") ?? lastKey
                     }
                     return lastKey
                 }
-                
                 decoder.dateDecodingStrategy = .iso8601
                 let object = try decoder.decode(T.self, from: data)
                 print("Decoded object: \(object)")

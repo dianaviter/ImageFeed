@@ -49,12 +49,7 @@ final class ImagesListCell: UITableViewCell {
     }
     
     func configure(with photo: Photo, dateFormatter: DateFormatter) {
-        if let createdAt = photo.createdAt {
-            dateLabel.text = displayDateFormatter.string(from: createdAt)
-        } else {
-            dateLabel.text = "Unknown date"
-            print("Error: createdAt is nil for photo with ID: \(photo.id)")
-        }
+        dateLabel.text = dateFormatter.string(from: photo.createdAt ?? Date())
         
         setIsLiked(photo.isLiked)
         
