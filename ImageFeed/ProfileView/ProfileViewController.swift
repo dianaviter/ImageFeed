@@ -1,6 +1,13 @@
 import UIKit
 import Kingfisher
 
+public protocol ProfileViewControllerProtocol: AnyObject {
+    var presenter: ProfilePresenterProtocol? { get set }
+    func updateProfile()
+    func updateProfileImage()
+    func logout()
+}
+
 final class ProfileViewController: UIViewController {
     // MARK: - Properties
     
@@ -251,7 +258,6 @@ final class ProfileViewController: UIViewController {
         gradientForNameLabel?.removeFromSuperlayer()
         gradientForLoginNameLabel?.removeFromSuperlayer()
         gradientForDescriptionLabel?.removeFromSuperlayer()
-        view.layoutIfNeeded()
     }
     
     // MARK: - Update UI After Data Load

@@ -36,7 +36,13 @@ final class AuthViewController: UIViewController {
                 assertionFailure("Error: WebViewViewController not found")
                 return
             }
+            let authHelper = AuthHelper()
+            let webViewPresenter = WebViewPresenter(authHelper: authHelper)
+            webViewVC.presenter = webViewPresenter
+            webViewPresenter.view = webViewVC
             webViewVC.delegate = self
+        } else {
+            super.prepare(for: segue, sender: sender)
         }
     }
 
