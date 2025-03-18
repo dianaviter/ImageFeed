@@ -95,7 +95,7 @@
                     <tabBarItem key="tabBarItem" title="" image="TapBarImagesActive" id="2og-m5-lhJ"/>
                     <navigationItem key="navigationItem" id="dzU-f1-ggJ"/>
                     <connections>
-                        <outlet property="tableView" destination="IuW-Nz-g7J" id="Cvb-uk-gW9"/>
+                        <outlet property="tableView" destination="IuW-Nz-g7J" id="tib-s3-ifQ"/>
                         <segue destination="noM-AM-IAn" kind="presentation" identifier="ShowSingleImage" id="0eJ-5J-d3l"/>
                     </connections>
                 </viewController>
