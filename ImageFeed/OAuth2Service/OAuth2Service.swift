@@ -75,7 +75,7 @@ final class OAuth2Service {
     }
 
     func logout() {
-        print("🚪 Пользователь вышел из аккаунта, токен удалён")
+        HTTPCookieStorage.shared.removeCookies(since: .distantPast)
         tokenStorage.token = nil
     }
 

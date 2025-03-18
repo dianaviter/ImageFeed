@@ -15,7 +15,12 @@ private enum ProfileServiceError: Error {
     case decodingError
 }
 
-final class ProfileImageService {
+
+protocol ProfileImageServiceProtocol {
+    func fetchProfileImage(_ token: String, completion: @escaping (Result<ProfileImageService.ProfileImage, Error>) -> Void)
+}
+
+final class ProfileImageService: ProfileImageServiceProtocol {
     // MARK: - Properties
     
     static let shared = ProfileImageService()

@@ -21,7 +21,11 @@ enum HttpMethods: String {
     case post = "POST"
 }
 
-final class ProfileService {
+protocol ProfileServiceProtocol {
+    func fetchProfile(_ token: String, completion: @escaping (Result<ProfileService.Profile, Error>) -> Void)
+}
+
+final class ProfileService: ProfileServiceProtocol {
     // MARK: - Properties
     
     static let shared = ProfileService()
@@ -132,5 +136,4 @@ final class ProfileService {
         self.token = token
         task.resume()
     }
-    
 }

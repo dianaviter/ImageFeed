@@ -1,7 +1,12 @@
 import Foundation
 import SwiftKeychainWrapper
 
-final class OAuth2TokenStorage {
+protocol TokenStorageProtocol {
+    var token: String? { get set }
+}
+
+final class OAuth2TokenStorage: TokenStorageProtocol {
+    static let shared = OAuth2TokenStorage()
     private let tokenKey = "authToken"
 
     var token: String? {
