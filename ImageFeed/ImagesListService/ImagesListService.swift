@@ -7,6 +7,11 @@
 
 import UIKit
 
+protocol ImagesListServiceProtocol {
+    func fetchPhotosNextPage(_ token: String, completion: @escaping (Result<[Photo], Error>) -> Void)
+    func changeLike(photoId: String, isLike: Bool, completion: @escaping (Result<Void, Error>) -> Void)
+}
+
 private enum ImagesListError: Error {
     case urlEncodingError
     case serverResponseError(Error)
@@ -59,8 +64,7 @@ struct Urls: Codable {
 
 struct EmptyResponse: Decodable {}
 
-
-final class ImagesListService {
+final class ImagesListService: ImagesListServiceProtocol {
     // MARK: - Properties
     
     var lastLoadedPage: Int = 0
@@ -147,7 +151,7 @@ final class ImagesListService {
         task.resume()
     }
     
-    func changeLike(photoId: String, isLike: Bool, _ completion: @escaping (Result<Void, Error>) -> Void) {
+    func changeLike(photoId: String, isLike: Bool, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let url = URL(string: "https://api.unsplash.com/photos/\(photoId)/like") else {
             completion(.failure(ImagesListError.urlEncodingError))
             return

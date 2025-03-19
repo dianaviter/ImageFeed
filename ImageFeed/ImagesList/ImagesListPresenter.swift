@@ -21,11 +21,7 @@ protocol ImagesListPresenterProtocol: AnyObject {
 }
 
 final class ImagesListPresenter: ImagesListPresenterProtocol {
-    func toggleLike(at index: Int, completion: @escaping (Photo) -> Void) {
-    
-    }
-    
-    private let imagesListService = ImagesListService()
+    private let imagesListService: ImagesListServiceProtocol
     weak var view: ImagesListViewControllerProtocol?
     let tokenStorage = OAuth2TokenStorage()
     
@@ -41,6 +37,10 @@ final class ImagesListPresenter: ImagesListPresenterProtocol {
             formatter.locale = Locale(identifier: "ru_RU")
             return formatter
         }()
+    
+    init(imagesListService: ImagesListServiceProtocol = ImagesListService()) {
+        self.imagesListService = imagesListService
+    }
     
     func fetchInitialPhotos() {
         imagesListService.fetchPhotosNextPage(tokenStorage.token ?? "") { [weak self] result in
@@ -72,7 +72,7 @@ final class ImagesListPresenter: ImagesListPresenterProtocol {
         return photo.size.height * scale + imageInsets.top + imageInsets.bottom
     }
     
-    func toggleLike(at index: Int, completion: @escaping () -> Void) {
+    func toggleLike(at index: Int, completion: @escaping (Photo) -> Void) {
         var photo = photos[index]
         let newLikeStatus = !photo.isLiked
 
@@ -89,7 +89,7 @@ final class ImagesListPresenter: ImagesListPresenterProtocol {
                 case .failure(let error):
                     print("Failed to update like status: \(error)")
                     self.photos[index].isLiked.toggle()
-                    self.view?.reloadData() // <- Обновляем UI после ошибки
+                    self.view?.reloadData()
                 }
             }
         }

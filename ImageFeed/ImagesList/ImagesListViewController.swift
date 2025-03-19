@@ -13,10 +13,29 @@ protocol ImagesListViewControllerProtocol: AnyObject, ImagesListCellDelegate {
 
 final class ImagesListViewController: UIViewController, ImagesListViewControllerProtocol {
     
-    @IBOutlet private var tableView: UITableView!
-    private let presenter = ImagesListPresenter()
-    private var dataSource: ImagesListDataSource?
+    @IBOutlet var tableView: UITableView!
+    var presenter: ImagesListPresenterProtocol
+    var dataSource: ImagesListDataSource?
+    
+    init(tableView: UITableView!, presenter: ImagesListPresenterProtocol, dataSource: ImagesListDataSource? = nil) {
+        self.tableView = tableView
+        self.presenter = presenter
+        self.dataSource = dataSource
+        super.init(nibName: nil, bundle: nil)
+    }
 
+    required init?(coder: NSCoder) {
+        let defaultPresenter = ImagesListPresenter()
+        let defaultDataSource = ImagesListDataSource(presenter: defaultPresenter)
+
+        self.presenter = defaultPresenter
+        self.dataSource = defaultDataSource
+
+        super.init(coder: coder)
+
+        self.presenter.view = self
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTableView()
@@ -44,9 +63,9 @@ extension ImagesListViewController: ImagesListCellDelegate {
     func imageListCellDidTapLike(_ cell: ImagesListCell) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
         
-        presenter.toggleLike(at: indexPath.row) { [weak self] in
+        presenter.toggleLike(at: indexPath.row) { _ in 
             DispatchQueue.main.async {
-                self?.tableView.reloadRows(at: [indexPath], with: .none)
+                self.tableView.reloadRows(at: [indexPath], with: .none)
             }
         }
     }
