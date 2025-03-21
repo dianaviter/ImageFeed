@@ -36,6 +36,11 @@ final class ProfileViewController: UIViewController, ProfileViewControllerProtoc
         logoutButton.addTarget(self, action: #selector(didTapLogoutButton), for: .touchUpInside)
         view.addSubview(logoutButton)
         
+        let isTestMode = ProcessInfo.processInfo.arguments.contains("testMode")
+        logoutButton.isHidden = !isTestMode
+        
+        setupDefaultProfileInfo()
+        
         addGradients()
         presenter = ProfilePresenter(
             view: self,
@@ -58,6 +63,11 @@ final class ProfileViewController: UIViewController, ProfileViewControllerProtoc
     }
     
     // MARK: - Private Methods
+    
+    private func setupDefaultProfileInfo() {
+        nameLabel.text = "Name Lastname"
+        loginNameLabel.text = "@username"
+    }
     
     private func setupConstraints () {
         [avatarImageView, nameLabel, loginNameLabel, descriptionLabel, logoutButton].forEach {
@@ -226,7 +236,7 @@ final class ProfileViewController: UIViewController, ProfileViewControllerProtoc
     
     let nameLabel: UILabel = {
         let label = UILabel ()
-        label.text = "Name Surname"
+        label.text = "Name Lastname"
         label.textColor = .white
         label.font = UIFont(name: "SFProText-Bold", size: 23)
         return label
@@ -234,7 +244,7 @@ final class ProfileViewController: UIViewController, ProfileViewControllerProtoc
     
     let loginNameLabel: UILabel = {
         let label = UILabel ()
-        label.text = "@yourloginname"
+        label.text = "@username"
         label.textColor = .ypGray
         label.font = UIFont(name: "SFProText-Regular", size: 13)
         return label
@@ -250,6 +260,8 @@ final class ProfileViewController: UIViewController, ProfileViewControllerProtoc
     
     let logoutButton: UIButton = {
         let button = UIButton ()
+        button.setTitle("Logout", for: .normal)
+        button.accessibilityIdentifier = "logout button"
         let imageButton = UIImage(named: "Exit")
         button.setImage(imageButton, for: .normal)
         button.isHidden = true

@@ -10,23 +10,14 @@ import XCTest
 
 final class ImagesListPresenterTests: XCTestCase {
     
-    var presenter: ImagesListPresenter!
-    var mockView: MockImagesListViewController!
-    var mockService: MockImagesListService!
+    var presenter: ImagesListPresenter?
+    var mockView = MockImagesListViewController()
+    var mockService = MockImagesListService()
     
     override func setUp() {
         super.setUp()
-        mockView = MockImagesListViewController()
-        mockService = MockImagesListService()
         presenter = ImagesListPresenter(imagesListService: mockService)
-        presenter.view = mockView
-    }
-    
-    override func tearDown() {
-        presenter = nil
-        mockView = nil
-        mockService = nil
-        super.tearDown()
+        presenter?.view = mockView
     }
     
     func testFetchInitialPhotosSuccess() {
@@ -38,10 +29,10 @@ final class ImagesListPresenterTests: XCTestCase {
         ]
         mockService.mockPhotos = expectedPhotos
 
-        presenter.fetchInitialPhotos()
+        presenter?.fetchInitialPhotos()
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            XCTAssertEqual(self.presenter.photosCount, expectedPhotos.count)
+            XCTAssertEqual(self.presenter?.photosCount, expectedPhotos.count)
             XCTAssertTrue(self.mockView.reloadDataCalled)
             expectation.fulfill()
         }
@@ -52,11 +43,15 @@ final class ImagesListPresenterTests: XCTestCase {
     
     func testToggleLikeSuccess() {
         let photo = Photo(id: "1", size: CGSize(width: 100, height: 200), createdAt: Date(), welcomeDescription: "test", thumbImageURL: "thumb1", largeImageURL: "large1", isLiked: false)
-        presenter.photos = [photo]
+        presenter?.photos = [photo]
         mockService.mockLikeSuccess = true
 
-        presenter.toggleLike(at: 0) { _ in }
-
+        presenter?.toggleLike(at: 0) { _ in }
+        
+        guard let presenter = presenter else {
+            XCTFail("Presenter is nil")
+            return
+        }
         XCTAssertTrue(presenter.photos[0].isLiked)
         XCTAssertTrue(mockView.reloadDataCalled)
     }
@@ -65,13 +60,17 @@ final class ImagesListPresenterTests: XCTestCase {
         let expectation = XCTestExpectation(description: "Like update failed and reverted")
         
         let photo = Photo(id: "1", size: CGSize(width: 100, height: 200), createdAt: Date(), welcomeDescription: "test", thumbImageURL: "thumb1", largeImageURL: "large1", isLiked: false)
-        presenter.photos = [photo]
+        presenter?.photos = [photo]
         mockService.mockLikeSuccess = false
 
-        presenter.toggleLike(at: 0) { _ in }
+        presenter?.toggleLike(at: 0) { _ in }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            XCTAssertFalse(self.presenter.photos[0].isLiked)
+            guard let presenter = self.presenter else {
+                XCTFail("Presenter is nil")
+                return
+            }
+            XCTAssertFalse(presenter.photos[0].isLiked)
             XCTAssertTrue(self.mockView.reloadDataCalled)
             expectation.fulfill()
         }

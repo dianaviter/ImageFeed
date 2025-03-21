@@ -10,32 +10,21 @@ import XCTest
 
 class ProfileViewControllerTests: XCTestCase {
     
-    var viewController: ProfileViewController!
-    var mockPresenter: MockProfilePresenter!
-    var mockTokenStorage: MockOAuth2TokenStorage!
-    var presenter: ProfilePresenter!
-    var mockView: MockProfileView!
+    var viewController = ProfileViewController()
+    var mockPresenter = MockProfilePresenter()
+    var mockTokenStorage: MockOAuth2TokenStorage?
+    var presenter: ProfilePresenter?
+    var mockView = MockProfileView()
     
     override func setUp() {
         super.setUp()
-        viewController = ProfileViewController()
-        mockPresenter = MockProfilePresenter()
         viewController.presenter = mockPresenter
-        mockView = MockProfileView()
         presenter = ProfilePresenter(
                     view: mockView,
                     profileService: MockProfileService(),
                     profileImageService: MockProfileImageService(),
                     tokenStorage: MockOAuth2TokenStorage()
         )
-    }
-    
-    override func tearDown() {
-        viewController = nil
-        mockPresenter = nil
-        presenter = nil
-        mockView = nil
-        super.tearDown()
     }
     
     func testUpdateProfile() {
@@ -74,14 +63,11 @@ class ProfileViewControllerTests: XCTestCase {
     }
 
     func testNavigateToLoginScreen() {
-        print("✅ Создаем ожидание")
         let expectation = XCTestExpectation(description: "Ожидаем вызова navigateToLoginScreen")
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            print("✅ Эмулируем вызов navigateToLoginScreen в Presenter")
-            self.presenter.navigateToLoginScreen()
+            self.presenter?.navigateToLoginScreen()
 
-            print("🚀 Проверяем, был ли вызван navigateToLoginScreen в Presenter")
             XCTAssertTrue(self.mockView.didNavigateToLogin, "❌ Метод navigateToLoginScreen не был вызван в ViewController")
 
             expectation.fulfill()

@@ -12,6 +12,7 @@ protocol ImagesListPresenterProtocol: AnyObject {
     var view: ImagesListViewControllerProtocol? { get set }
     var photosCount: Int { get }
     var displayDateFormatter: DateFormatter { get }
+    var photos: [Photo] { get }
     func fetchInitialPhotos()
     func photo(at index: Int) -> Photo
     func photoURL(at index: Int) -> URL?

@@ -9,6 +9,8 @@ import XCTest
 @testable import ImageFeed
 
 final class MockImagesListPresenter: ImagesListPresenterProtocol {
+    var photos: [ImageFeed.Photo] = []
+    
     var view: ImagesListViewControllerProtocol?
     var photosCount: Int = 1
     var fetchInitialPhotosCalled = false

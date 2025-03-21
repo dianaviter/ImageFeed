@@ -88,6 +88,7 @@ final class ImagesListCell: UITableViewCell {
     func setIsLiked(_ isLiked: Bool) {
         let likeImage = isLiked ? UIImage(named: "Active") : UIImage(named: "NoActive")
         likeButton.setImage(likeImage, for: .normal)
+        likeButton.accessibilityIdentifier = "like button"
     }
     
     // MARK: - Gradient Layers

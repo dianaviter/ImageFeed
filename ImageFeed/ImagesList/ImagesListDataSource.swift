@@ -9,9 +9,11 @@ import UIKit
 
 final class ImagesListDataSource: NSObject, UITableViewDataSource, UITableViewDelegate {
     private let presenter: ImagesListPresenterProtocol
+    weak var viewController: ImagesListViewController?
 
-    init(presenter: ImagesListPresenterProtocol) {
+    init(presenter: ImagesListPresenterProtocol, viewController: ImagesListViewController) {
         self.presenter = presenter
+        self.viewController = viewController
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -35,7 +37,7 @@ final class ImagesListDataSource: NSObject, UITableViewDataSource, UITableViewDe
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        (tableView.delegate as? ImagesListViewController)?.performSegue(withIdentifier: "ShowSingleImage", sender: indexPath)
+        viewController?.performSegue(withIdentifier: "ShowSingleImage", sender: indexPath)
     }
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {

@@ -94,7 +94,6 @@ final class ProfilePresenter: ProfilePresenterProtocol {
     }
 
     func navigateToLoginScreen() {
-        print("🚀 navigateToLoginScreen вызван в ProfilePresenter")
         view?.navigateToLoginScreen()
     }
     

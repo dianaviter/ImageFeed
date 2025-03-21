@@ -16,6 +16,9 @@ final class ImagesListViewController: UIViewController, ImagesListViewController
     @IBOutlet var tableView: UITableView!
     var presenter: ImagesListPresenterProtocol
     var dataSource: ImagesListDataSource?
+    let imagesListService = ImagesListService()
+    let tokenStorage = OAuth2TokenStorage()
+    private let showSingleImageSegueIdentifier = "ShowSingleImage"
     
     init(tableView: UITableView!, presenter: ImagesListPresenterProtocol, dataSource: ImagesListDataSource? = nil) {
         self.tableView = tableView
@@ -26,13 +29,14 @@ final class ImagesListViewController: UIViewController, ImagesListViewController
 
     required init?(coder: NSCoder) {
         let defaultPresenter = ImagesListPresenter()
-        let defaultDataSource = ImagesListDataSource(presenter: defaultPresenter)
-
+        
         self.presenter = defaultPresenter
-        self.dataSource = defaultDataSource
 
         super.init(coder: coder)
 
+        let defaultDataSource = ImagesListDataSource(presenter: defaultPresenter, viewController: self)
+
+        self.dataSource = defaultDataSource
         self.presenter.view = self
     }
     
@@ -41,9 +45,32 @@ final class ImagesListViewController: UIViewController, ImagesListViewController
         setupTableView()
         setupPresenter()
     }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        print("prepare(for segue:) called with identifier:", segue.identifier ?? "nil")
+        if segue.identifier == showSingleImageSegueIdentifier {
+            guard
+                let viewController = segue.destination as? SingleImageViewController,
+                let indexPath = sender as? IndexPath
+            else {
+                assertionFailure("Invalid segue destination")
+                return
+            }
+            let photo = presenter.photos[indexPath.row]
+            guard let fullImageUrl = URL(string: photo.largeImageURL) else {
+                assertionFailure("Invalid image URL")
+                return
+            }
+            viewController.imageURL = fullImageUrl
+            print("Sending imageURL:", fullImageUrl)
+        } else {
+            super.prepare(for: segue, sender: sender)
+        }
+    }
 
     private func setupTableView() {
-        dataSource = ImagesListDataSource(presenter: presenter)
+        dataSource = ImagesListDataSource(presenter: presenter, viewController: self) // 🔥 Передаем self
+
         tableView.dataSource = dataSource
         tableView.delegate = dataSource
         tableView.contentInset = UIEdgeInsets(top: 12, left: 0, bottom: 12, right: 0)
@@ -69,4 +96,23 @@ extension ImagesListViewController: ImagesListCellDelegate {
             }
         }
     }
+    
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        let isTestMode = ProcessInfo.processInfo.arguments.contains("testMode")
+        if isTestMode {
+            return
+        }
+        if indexPath.row == presenter.photos.count - 1 {
+            imagesListService.fetchPhotosNextPage(tokenStorage.token ?? "") { result in
+                switch result {
+                case .success:
+                    break
+                case .failure(let error):
+                    print("Error fetching next page: \(error)")
+                }
+            }
+        }
+    }
 }
+
+

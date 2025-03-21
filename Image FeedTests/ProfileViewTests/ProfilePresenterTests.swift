@@ -10,34 +10,21 @@ import Testing
 import XCTest
 
 final class ProfilePresenterTests: XCTestCase {
-    var presenter: ProfilePresenter!
-    var mockView: MockProfileView!
-    var mockProfileService: MockProfileService!
-    var mockProfileImageService: MockProfileImageService!
-    var mockTokenStorage: MockOAuth2TokenStorage!
+    var presenter: ProfilePresenter?
+    var mockView = MockProfileView()
+    var mockProfileService = MockProfileService()
+    var mockProfileImageService = MockProfileImageService()
+    var mockTokenStorage = MockOAuth2TokenStorage()
 
     override func setUp() {
         super.setUp()
-        mockView = MockProfileView()
-        mockProfileService = MockProfileService()
-        mockProfileImageService = MockProfileImageService()
-        mockTokenStorage = MockOAuth2TokenStorage()
         mockTokenStorage.token = "test_token"
-
+        
         presenter = ProfilePresenter(
             view: mockView,
             profileService: mockProfileService,
             profileImageService: mockProfileImageService, tokenStorage: mockTokenStorage
         )
-    }
-    
-    override func tearDown() {
-        presenter = nil
-        mockView = nil
-        mockProfileService = nil
-        mockProfileImageService = nil
-        mockTokenStorage = nil
-        super.tearDown()
     }
 
     func testFetchProfileData_Success() {
@@ -51,7 +38,7 @@ final class ProfilePresenterTests: XCTestCase {
         )
         mockProfileService.profile = expectedProfile
 
-        presenter.fetchProfileData()
+        presenter?.fetchProfileData()
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             XCTAssertEqual(self.mockView.updatedProfile?.name, expectedProfile.name)
@@ -65,19 +52,19 @@ final class ProfilePresenterTests: XCTestCase {
 
 
     func testFetchProfileData_Failure() {
-        presenter.fetchProfileData()
+        presenter?.fetchProfileData()
         
         XCTAssertFalse(mockView.profileUpdated)
     }
 
     func testShowLogoutAlert() {
-        presenter.showLogoutAlert()
+        presenter?.showLogoutAlert()
         
         XCTAssertTrue(mockView.didPresentAlert)
     }
 
     func testNavigateToLoginScreen() {
-        presenter.logout()
+        presenter?.logout()
         
         XCTAssertTrue(mockView.didNavigateToLogin)
     }

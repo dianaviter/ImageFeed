@@ -10,8 +10,8 @@ import XCTest
 
 final class ImagesListViewControllerTests: XCTestCase {
     
-    var viewController: ImagesListViewController!
-    var mockPresenter: MockImagesListPresenter!
+    var viewController: ImagesListViewController?
+    var mockPresenter = MockImagesListPresenter()
     let tableView = UITableView()
     let presenter = MockImagesListPresenter()
     let mockTableView = MockTableView()
@@ -23,39 +23,32 @@ final class ImagesListViewControllerTests: XCTestCase {
         
         XCTAssertNotNil(viewController, "viewController is nil!")
         
-        mockPresenter = MockImagesListPresenter()
-        viewController.presenter = mockPresenter
-        viewController.loadViewIfNeeded()
+        viewController?.presenter = mockPresenter
+        viewController?.loadViewIfNeeded()
         
-        XCTAssertNotNil(viewController.tableView, "tableView is nil after loadViewIfNeeded()")
-    }
-    
-    override func tearDown() {
-        viewController = nil
-        mockPresenter = nil
-        super.tearDown()
+        XCTAssertNotNil(viewController?.tableView, "tableView is nil after loadViewIfNeeded()")
     }
     
     func testViewDidLoadCallsFetchInitialPhotos() {
-        viewController.viewDidLoad()
+        viewController?.viewDidLoad()
         
         XCTAssertTrue(mockPresenter.fetchInitialPhotosCalled)
     }
     
     func testReloadDataUpdatesTableView() {
         let mockTableView = MockTableView()
-        viewController.tableView = mockTableView
+        viewController?.tableView = mockTableView
 
-        viewController.reloadData()
+        viewController?.reloadData()
 
         XCTAssertTrue(mockTableView.reloadDataCalled)
     }
     
     func testDidTapLikeCallsPresenterToggleLike() {
         let expectation = expectation(description: "TableView should load its data")
-        viewController.tableView.dataSource = viewController.dataSource
-        viewController.tableView.delegate = viewController.dataSource
-        viewController.tableView.reloadData()
+        viewController?.tableView.dataSource = viewController?.dataSource
+        viewController?.tableView.delegate = viewController?.dataSource
+        viewController?.tableView.reloadData()
         
         DispatchQueue.main.async {
             expectation.fulfill()
@@ -63,11 +56,11 @@ final class ImagesListViewControllerTests: XCTestCase {
 
         waitForExpectations(timeout: 1.0)
 
-        guard let cell = viewController.tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as? ImagesListCell else {
+        guard let cell = viewController?.tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as? ImagesListCell else {
             return
         }
         
-        viewController.imageListCellDidTapLike(cell)
+        viewController?.imageListCellDidTapLike(cell)
         
         XCTAssertTrue(mockPresenter.toggleLikeCalled, "❌ toggleLike не был вызван!")
     }
