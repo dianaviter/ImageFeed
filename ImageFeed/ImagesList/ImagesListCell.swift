@@ -49,19 +49,21 @@ final class ImagesListCell: UITableViewCell {
     }
     
     func configure(with photo: Photo, dateFormatter: DateFormatter) {
-        dateLabel.text = dateFormatter.string(from: photo.createdAt ?? Date())
-        
+        if let createdAt = photo.createdAt {
+            dateLabel.text = dateFormatter.string(from: createdAt)
+        } else {
+            dateLabel.text = "Unknown date"
+            print("Error: createdAt is nil for photo with ID: \(photo.id)")
+        }
+
         setIsLiked(photo.isLiked)
-        
+      
         cellImage.kf.indicatorType = .activity
-        
         if let url = URL(string: photo.thumbImageURL) {
             cellImage.kf.setImage(
                 with: url,
                 placeholder: nil,
-                options: [
-                    .transition(.fade(0.3))
-                ],
+                options: [.transition(.fade(0.3))],
                 progressBlock: { receivedSize, totalSize in
                     print("Loading: \(receivedSize) from \(totalSize)")
                 }
@@ -71,7 +73,6 @@ final class ImagesListCell: UITableViewCell {
                     print("Loaded: \(value.source.url?.absoluteString ?? "")")
                     self.removeGradient()
                     self.isDataLoaded = true
-                    
                     DispatchQueue.main.async {
                         self.updateCellHeight?()
                     }
@@ -87,6 +88,7 @@ final class ImagesListCell: UITableViewCell {
     func setIsLiked(_ isLiked: Bool) {
         let likeImage = isLiked ? UIImage(named: "Active") : UIImage(named: "NoActive")
         likeButton.setImage(likeImage, for: .normal)
+        likeButton.accessibilityIdentifier = "like button"
     }
     
     // MARK: - Gradient Layers

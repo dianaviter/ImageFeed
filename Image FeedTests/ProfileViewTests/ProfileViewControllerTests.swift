@@ -1,0 +1,78 @@
+//
+//  Untitled.swift
+//  ImageFeed
+//
+//  Created by Diana Viter on 18.03.2025.
+//
+
+import XCTest
+@testable import ImageFeed
+
+class ProfileViewControllerTests: XCTestCase {
+    
+    var viewController = ProfileViewController()
+    var mockPresenter = MockProfilePresenter()
+    var mockTokenStorage: MockOAuth2TokenStorage?
+    var presenter: ProfilePresenter?
+    var mockView = MockProfileView()
+    
+    override func setUp() {
+        super.setUp()
+        viewController.presenter = mockPresenter
+        presenter = ProfilePresenter(
+                    view: mockView,
+                    profileService: MockProfileService(),
+                    profileImageService: MockProfileImageService(),
+                    tokenStorage: MockOAuth2TokenStorage()
+        )
+    }
+    
+    func testUpdateProfile() {
+        let profile = ProfileService.Profile(
+            username: "test_username",
+            firstName: "Test",
+            lastName: "User",
+            bio: "Test bio"
+        )
+        
+        viewController.updateProfile(profile: profile)
+        
+        XCTAssertEqual(viewController.nameLabel.text, "Test User")
+        XCTAssertEqual(viewController.loginNameLabel.text, "@test_username")
+        XCTAssertEqual(viewController.descriptionLabel.text, "Test bio")
+    }
+    
+    func testUpdateProfileImage() {
+        let expectation = XCTestExpectation(description: "Waiting for image loading")
+
+        let profileImage = ProfileImageService.ProfileImage(
+            profileImage: ProfileImageService.ProfileImageSizes(
+                small: "https://images.unsplash.com/profile-1736113049262-c4d1a21a5e57image?ixlib=rb-4.0.3&crop=faces&fit=crop&w=32&h=32",
+                medium: "https://images.unsplash.com/profile-1736113049262-c4d1a21a5e57image?ixlib=rb-4.0.3&crop=faces&fit=crop&w=64&h=64",
+                large: "https://images.unsplash.com/profile-1736113049262-c4d1a21a5e57image?ixlib=rb-4.0.3&crop=faces&fit=crop&w=128&h=128"
+            )
+        )
+
+        viewController.updateProfileImage(profileImage: profileImage)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            XCTAssertNotNil(self.viewController.avatarImageView.image)
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 3.0)
+    }
+
+    func testNavigateToLoginScreen() {
+        let expectation = XCTestExpectation(description: "Waiting for navigateToLoginScreen")
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.presenter?.navigateToLoginScreen()
+
+            XCTAssertTrue(self.mockView.didNavigateToLogin, "navigateToLoginScreen was not called in ViewController")
+
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 2.0)
+    }
+}

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import WebKit
 
 private enum OAuthError: Error {
     case urlEncodingError
@@ -27,8 +28,6 @@ final class OAuth2Service {
     private let urlSession = URLSession.shared
     private var task: URLSessionTask?
     private var lastCode: String?
-    
-    private init() {}
 
     func fetchOAuthToken(code: String, completion: @escaping (Result<String, Error>) -> Void) {
         assert(Thread.isMainThread)
@@ -75,8 +74,14 @@ final class OAuth2Service {
     }
 
     func logout() {
-        print("🚪 Пользователь вышел из аккаунта, токен удалён")
         tokenStorage.token = nil
+        HTTPCookieStorage.shared.removeCookies(since: .distantPast)
+        let websiteDataTypes = Set([WKWebsiteDataTypeCookies, WKWebsiteDataTypeLocalStorage, WKWebsiteDataTypeSessionStorage])
+        let date = Date(timeIntervalSince1970: 0)
+
+        WKWebsiteDataStore.default().removeData(ofTypes: websiteDataTypes, modifiedSince: date) {
+            print("🗑️ Данные WebView очищены")
+        }
     }
 
     private func makeOAuthTokenRequest(code: String) -> URLRequest? {

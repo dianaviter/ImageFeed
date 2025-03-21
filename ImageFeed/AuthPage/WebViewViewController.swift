@@ -8,25 +8,26 @@
 import UIKit
 import WebKit
 
-fileprivate let UnsplashAuthorizeURLString = "https://unsplash.com/oauth/authorize"
+public protocol WebViewViewControllerProtocol: AnyObject {
+    var presenter: WebViewPresenterProtocol? { get set }
+    func load(request: URLRequest)
+    func setProgressValue(_ newValue: Float)
+    func setProgressHidden(_ isHidden: Bool)
+}
 
 protocol WebViewViewControllerDelegate: AnyObject {
     func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String)
     func webViewViewControllerDidCancel(_ vc: WebViewViewController)
 }
 
-final class WebViewViewController: UIViewController, WebViewViewControllerDelegate {
-    func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
-    }
-    
-    func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
-    }
+final class WebViewViewController: UIViewController, WebViewViewControllerDelegate, WebViewViewControllerProtocol {
     
     @IBOutlet private var webView: WKWebView!
     @IBOutlet private var progressView: UIProgressView!
     
     private var estimatedProgressObservation: NSKeyValueObservation?
     private let imagesListService = ImagesListService()
+    var presenter: WebViewPresenterProtocol?
     
     weak var delegate: WebViewViewControllerDelegate?
 
@@ -35,43 +36,17 @@ final class WebViewViewController: UIViewController, WebViewViewControllerDelega
         
         webView.navigationDelegate = self
         webView.isUserInteractionEnabled = true
+        webView.accessibilityIdentifier = "UnsplashWebView"
         
         estimatedProgressObservation = webView.observe(
             \.estimatedProgress,
             options: [],
-            changeHandler: { [weak self] _, _ in
-                self?.updateProgress()
+            changeHandler: { _, _ in
+                self.presenter?.didUpdateProgressValue(self.webView.estimatedProgress)
             }
         )
-
-        loadAuthView()
-        updateProgress()
-        
-        print("WebViewViewController loaded, delegate: \(String(describing: delegate))")
-    }
-    
-    private func loadAuthView() {
-        guard var urlComponents = URLComponents(string: UnsplashAuthorizeURLString) else {
-            print("Error: failed to create URLComponents")
-            return
-        }
-        
-        urlComponents.queryItems = [
-            URLQueryItem(name: "client_id", value: Constants.accessKey),
-            URLQueryItem(name: "redirect_uri", value: Constants.redirectURI),
-            URLQueryItem(name: "response_type", value: "code"),
-            URLQueryItem(name: "scope", value: Constants.accessScope)
-        ]
-        
-        guard let url = urlComponents.url else {
-            print("Error: failed to create URL")
-            return
-        }
-        
-        let request = URLRequest(url: url)
-        
-        print("Loading URL: \(url.absoluteString)")
-        webView.load(request)
+        presenter?.viewDidLoad()
+        presenter?.didUpdateProgressValue(webView.estimatedProgress)
     }
 
     @IBAction private func didTapBackButton(_ sender: Any?) {
@@ -79,9 +54,22 @@ final class WebViewViewController: UIViewController, WebViewViewControllerDelega
         dismiss(animated: true)
     }
 
-    private func updateProgress() {
-        progressView.progress = Float(webView.estimatedProgress)
-        progressView.isHidden = abs(webView.estimatedProgress - 1.0) <= 0.0001
+    func setProgressValue(_ newValue: Float) {
+        progressView.progress = newValue
+    }
+
+    func setProgressHidden(_ isHidden: Bool) {
+        progressView.isHidden = isHidden
+    }
+    
+    func load(request: URLRequest) {
+        webView.load(request)
+    }
+    
+    func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
+    }
+    
+    func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
     }
 }
 
@@ -110,22 +98,9 @@ extension WebViewViewController: WKNavigationDelegate {
     }
     
     private func code(from navigationAction: WKNavigationAction) -> String? {
-        guard let url = navigationAction.request.url else {
-            print("Error: URL is missing in navigationAction")
-            return nil
+        if let url = navigationAction.request.url {
+            return presenter?.code(from: url)
         }
-
-        print("Checking URL: \(url.absoluteString)")
-
-        guard let urlComponents = URLComponents(string: url.absoluteString),
-              urlComponents.path == "/oauth/authorize/native",
-              let items = urlComponents.queryItems,
-              let codeItem = items.first(where: { $0.name == "code" }) else {
-            print("Failed to find URL code")
-            return nil
-        }
-
-        print("Code found: \(codeItem.value ?? "nil")")
-        return codeItem.value
+        return nil
     }
 }

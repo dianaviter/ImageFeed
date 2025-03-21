@@ -95,7 +95,7 @@
                     <tabBarItem key="tabBarItem" title="" image="TapBarImagesActive" id="2og-m5-lhJ"/>
                     <navigationItem key="navigationItem" id="dzU-f1-ggJ"/>
                     <connections>
-                        <outlet property="tableView" destination="IuW-Nz-g7J" id="Cvb-uk-gW9"/>
+                        <outlet property="tableView" destination="IuW-Nz-g7J" id="tib-s3-ifQ"/>
                         <segue destination="noM-AM-IAn" kind="presentation" identifier="ShowSingleImage" id="0eJ-5J-d3l"/>
                     </connections>
                 </viewController>
@@ -207,6 +207,7 @@
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gbN-YG-Pom">
                                 <rect key="frame" x="16" y="680" width="361" height="48"/>
                                 <color key="backgroundColor" name="YP White (iOS)"/>
+                                <accessibility key="accessibilityConfiguration" identifier="Authenticate" label="Authenticate"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="48" id="MFG-dw-SZV"/>
                                 </constraints>
@@ -225,6 +226,7 @@
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="QTm-S8-pHL"/>
                         <color key="backgroundColor" name="YP Black (iOS)"/>
+                        <accessibility key="accessibilityConfiguration" identifier="UnsplashWebView"/>
                         <constraints>
                             <constraint firstItem="gbN-YG-Pom" firstAttribute="leading" secondItem="QTm-S8-pHL" secondAttribute="leading" constant="16" id="16b-1H-yJA"/>
                             <constraint firstItem="QTm-S8-pHL" firstAttribute="bottom" secondItem="gbN-YG-Pom" secondAttribute="bottom" constant="90" id="2rq-ve-dZb"/>
@@ -245,7 +247,7 @@
         <!--Web View View Controller-->
         <scene sceneID="y7W-R7-laa">
             <objects>
-                <viewController storyboardIdentifier="WebViewViewController" id="GlR-CY-Pfp" customClass="WebViewViewController" customModule="ImageFeed" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController restorationIdentifier="WebViewViewController" storyboardIdentifier="WebViewViewController" id="GlR-CY-Pfp" customClass="WebViewViewController" customModule="ImageFeed" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="ju3-os-8zg">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -277,6 +279,9 @@
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="sTL-gu-Yr1"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <accessibility key="accessibilityConfiguration" identifier="UnsplashWebView">
+                            <bool key="isElement" value="YES"/>
+                        </accessibility>
                         <constraints>
                             <constraint firstItem="c85-wh-Duo" firstAttribute="leading" secondItem="ju3-os-8zg" secondAttribute="leading" id="LKN-nO-v19"/>
                             <constraint firstItem="xF2-By-QUB" firstAttribute="top" secondItem="sTL-gu-Yr1" secondAttribute="top" id="MWV-tk-59A"/>

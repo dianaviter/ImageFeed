@@ -1,17 +1,24 @@
 import UIKit
 import Kingfisher
 
-final class ProfileViewController: UIViewController {
+protocol ProfileViewControllerProtocol: AnyObject {
+    var presenter: ProfilePresenterProtocol? { get set }
+    func updateProfile(profile: ProfileService.Profile)
+    func updateProfileImage(profileImage: ProfileImageService.ProfileImage)
+    func navigateToLoginScreen()
+    func presentAlert(_ alert: UIAlertController)
+    func updateUIAfterDataLoad()
+}
+
+final class ProfileViewController: UIViewController, ProfileViewControllerProtocol {
     // MARK: - Properties
     
-    private let profileService = ProfileService.shared
-    private let profileImageService = ProfileImageService.shared
     let token = OAuth2TokenStorage().token
-    private var profileImageServiceObserver: NSObjectProtocol?
     private var gradientForAvatar: CAGradientLayer?
     private var gradientForNameLabel: CAGradientLayer?
     private var gradientForLoginNameLabel: CAGradientLayer?
     private var gradientForDescriptionLabel: CAGradientLayer?
+    var presenter: ProfilePresenterProtocol?
     
     private var isDataLoaded = false
 
@@ -24,28 +31,43 @@ final class ProfileViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .ypBlackIOS
         setupConstraints()
-        observeProfileImageChanges()
-        fetchProfileData()
+        presenter?.observeProfileImageChanges()
         
         logoutButton.addTarget(self, action: #selector(didTapLogoutButton), for: .touchUpInside)
         view.addSubview(logoutButton)
         
+        let isTestMode = ProcessInfo.processInfo.arguments.contains("testMode")
+        logoutButton.isHidden = !isTestMode
+        
+        setupDefaultProfileInfo()
+        
         addGradients()
+        presenter = ProfilePresenter(
+            view: self,
+            profileService: ProfileService.shared,
+            profileImageService: ProfileImageService.shared,
+            tokenStorage: OAuth2TokenStorage.shared
+        )
+        presenter?.fetchProfileData()
     }
     
     deinit {
-        if let observer = profileImageServiceObserver {
-            NotificationCenter.default.removeObserver(observer)
-        }
+        presenter?.removeObserver()
+        removeGradients()
     }
     
     // MARK: - Actions
     
     @objc private func didTapLogoutButton() {
-        showLogoutAlert()
+        presenter?.showLogoutAlert()
     }
     
     // MARK: - Private Methods
+    
+    private func setupDefaultProfileInfo() {
+        nameLabel.text = "Name Lastname"
+        loginNameLabel.text = "@username"
+    }
     
     private func setupConstraints () {
         [avatarImageView, nameLabel, loginNameLabel, descriptionLabel, logoutButton].forEach {
@@ -75,54 +97,13 @@ final class ProfileViewController: UIViewController {
         ])
     }
     
-    private func observeProfileImageChanges() {
-        profileImageServiceObserver = NotificationCenter.default.addObserver(
-            forName: ProfileImageService.didChangeNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] notification in
-            guard let self = self,
-                  let userInfo = notification.userInfo as? [String: ProfileImageService.ProfileImage],
-                  let profileImage = userInfo["profileImage"] else {
-                return
-            }
-            self.updateProfileImage(profileImage: profileImage)
-        }
-    }
-    
-    private func fetchProfileData () {
-        guard let token = token else {
-            print("Token is nil")
-            return
-        }
-        
-        profileService.fetchProfile(token) { [weak self] result in
-            switch result {
-            case .success(let profile):
-                self?.updateProfile(profile: profile)
-                self?.profileImageService.fetchProfileImage(token) { imageResult in
-                    switch imageResult {
-                    case .success(let profileImage):
-                        self?.updateProfileImage(profileImage: profileImage)
-                        self?.isDataLoaded = true
-                        self?.updateUIAfterDataLoad()
-                    case .failure (let error):
-                        print ("Failed to fetch profile (Image): \(error)")
-                    }
-                }
-            case .failure (let error):
-                print ("Failed to fetch profile: \(error)")
-            }
-        }
-    }
-    
-    private func updateProfile (profile: ProfileService.Profile) {
+    func updateProfile (profile: ProfileService.Profile) {
         nameLabel.text = profile.name
         loginNameLabel.text = profile.loginName
         descriptionLabel.text = profile.bio
     }
     
-    private func updateProfileImage(profileImage: ProfileImageService.ProfileImage) {
+    func updateProfileImage(profileImage: ProfileImageService.ProfileImage) {
         guard let imageUrlString = profileImage.profileImage.medium,
               let imageUrl = URL(string: imageUrlString) else {
             return
@@ -130,31 +111,7 @@ final class ProfileViewController: UIViewController {
         avatarImageView.kf.setImage(with: imageUrl)
     }
     
-    private func showLogoutAlert() {
-        let alert = UIAlertController(
-            title: "Пока, пока!",
-            message: "Уверены, что хотите выйти?",
-            preferredStyle: .alert
-        )
-
-        let yesAction = UIAlertAction(title: "Да", style: .default) { _ in
-            self.logout()
-        }
-
-        let noAction = UIAlertAction(title: "Нет", style: .default, handler: nil)
-
-        alert.addAction(yesAction)
-        alert.addAction(noAction)
-
-        present(alert, animated: true, completion: nil)
-    }
-    
-    private func logout() {
-        OAuth2Service.shared.logout()
-        switchToLoginScreen()
-    }
-    
-    private func switchToLoginScreen() {
+    func navigateToLoginScreen() {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         guard let authVC = storyboard.instantiateViewController(identifier: "AuthViewController") as? AuthViewController else {
             print("Failed to create AuthViewController")
@@ -165,6 +122,10 @@ final class ProfileViewController: UIViewController {
             window.rootViewController = authVC
             window.makeKeyAndVisible()
         }
+    }
+    
+    func presentAlert(_ alert: UIAlertController) {
+        present(alert, animated: true, completion: nil)
     }
 
     // MARK: - Gradient Layers
@@ -250,13 +211,12 @@ final class ProfileViewController: UIViewController {
         gradientForNameLabel?.removeFromSuperlayer()
         gradientForLoginNameLabel?.removeFromSuperlayer()
         gradientForDescriptionLabel?.removeFromSuperlayer()
-        view.layoutIfNeeded()
     }
     
     // MARK: - Update UI After Data Load
     
-    private func updateUIAfterDataLoad() {
-        if isDataLoaded {
+    func updateUIAfterDataLoad() {
+        if !isDataLoaded {
             logoutButton.isHidden = false
         }
         removeGradients()
@@ -264,7 +224,7 @@ final class ProfileViewController: UIViewController {
     
     // MARK: - UI Elements
     
-    private let avatarImageView: UIImageView = {
+    let avatarImageView: UIImageView = {
         let imageView = UIImageView(image: UIImage(named: "UserPic"))
         imageView.frame = CGRect(x: 100, y: 100, width: 70, height: 70)
         
@@ -274,23 +234,23 @@ final class ProfileViewController: UIViewController {
         return imageView
     } ()
     
-    private let nameLabel: UILabel = {
+    let nameLabel: UILabel = {
         let label = UILabel ()
-        label.text = "Name Surname"
+        label.text = "Name Lastname"
         label.textColor = .white
         label.font = UIFont(name: "SFProText-Bold", size: 23)
         return label
     } ()
     
-    private let loginNameLabel: UILabel = {
+    let loginNameLabel: UILabel = {
         let label = UILabel ()
-        label.text = "@yourloginname"
+        label.text = "@username"
         label.textColor = .ypGray
         label.font = UIFont(name: "SFProText-Regular", size: 13)
         return label
     } ()
     
-    private let descriptionLabel: UILabel = {
+    let descriptionLabel: UILabel = {
         let label = UILabel ()
         label.text = "Your description"
         label.textColor = .white
@@ -298,8 +258,10 @@ final class ProfileViewController: UIViewController {
         return label
     }()
     
-    private let logoutButton: UIButton = {
+    let logoutButton: UIButton = {
         let button = UIButton ()
+        button.setTitle("Logout", for: .normal)
+        button.accessibilityIdentifier = "logout button"
         let imageButton = UIImage(named: "Exit")
         button.setImage(imageButton, for: .normal)
         button.isHidden = true

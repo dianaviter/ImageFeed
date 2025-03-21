@@ -30,7 +30,8 @@ struct AnyKey: CodingKey {
 }
 
 final class NetworkClient {
-    private func data(request: URLRequest, handler: @escaping (Result<Data, Error>) -> Void) {
+
+    internal func data(request: URLRequest, handler: @escaping (Result<Data, Error>) -> Void) {
         let fulfillCompletionOnTheMainThread: (Result<Data, Error>) -> Void = { result in
             DispatchQueue.main.async {
                 handler(result)
