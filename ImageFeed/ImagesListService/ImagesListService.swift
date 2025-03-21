@@ -34,7 +34,7 @@ struct Photo {
 
 struct PhotoResult: Codable {
     let id: String?
-    let createdAt: Date?
+    let createdAt: String?
     let updatedAt: Date?
     let width: Int?
     let height: Int?
@@ -108,7 +108,6 @@ final class ImagesListService: ImagesListServiceProtocol {
                 switch result {
                 case .success(let response):
                     print("Decoded Photo Results: \(response)")
-
                     let newPhotos: [Photo] = response.compactMap { photoResult in
                         guard let id = photoResult.id,
                               let width = photoResult.width,
@@ -118,17 +117,13 @@ final class ImagesListService: ImagesListServiceProtocol {
                             print("Skipping photo due to missing essential fields")
                             return nil
                         }
-
-                        if let createdAt = photoResult.createdAt {
-                            print("Decoded createdAt for photo \(id): \(createdAt)")
-                        } else {
-                            print("createdAt is nil for photo \(id)")
-                        }
+                        
+                        let createdAtDate = ISO8601DateFormatter().date(from: photoResult.createdAt ?? "")
 
                         return Photo(
                             id: id,
                             size: CGSize(width: width, height: height),
-                            createdAt: photoResult.createdAt,
+                            createdAt: createdAtDate,
                             welcomeDescription: photoResult.description,
                             thumbImageURL: thumbImageURL,
                             largeImageURL: largeImageURL,

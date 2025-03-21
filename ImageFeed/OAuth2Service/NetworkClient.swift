@@ -18,11 +18,11 @@ enum NetworkError: Error {
 struct AnyKey: CodingKey {
     var stringValue: String
     var intValue: Int?
-
+    
     init?(stringValue: String) {
         self.stringValue = stringValue
     }
-
+    
     init?(intValue: Int) {
         self.intValue = intValue
         self.stringValue = "\(intValue)"
@@ -96,8 +96,8 @@ extension URLSession {
             }
             
             if let responseString = String(data: data, encoding: .utf8) {
-                        print("Server responce: \(responseString)")
-                    }
+                print("Server responce: \(responseString)")
+            }
             
             do {
                 let decoder = JSONDecoder()
@@ -109,7 +109,6 @@ extension URLSession {
                     if lastKey.stringValue == "created_at" {
                         return AnyKey(stringValue: "createdAt") ?? lastKey
                     }
-
                     return lastKey
                 }
                 decoder.dateDecodingStrategy = .iso8601

@@ -57,7 +57,7 @@ final class ImagesListCell: UITableViewCell {
         }
 
         setIsLiked(photo.isLiked)
-
+      
         cellImage.kf.indicatorType = .activity
         if let url = URL(string: photo.thumbImageURL) {
             cellImage.kf.setImage(
