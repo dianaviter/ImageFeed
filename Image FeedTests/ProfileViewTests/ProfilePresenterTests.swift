@@ -28,7 +28,7 @@ final class ProfilePresenterTests: XCTestCase {
     }
 
     func testFetchProfileData_Success() {
-        let expectation = XCTestExpectation(description: "Ожидание загрузки профиля")
+        let expectation = XCTestExpectation(description: "Waiting for the profile loading")
 
         let expectedProfile = ProfileService.Profile(
             username: "test",

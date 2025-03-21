@@ -14,12 +14,10 @@ final class Image_FeedUITestsLaunchTests: XCTestCase {
         continueAfterFailure = false
         app.launchArguments.append(contentsOf: ["testMode"])
         app.launch()
-        print("✅ Тестовый режим запущен: \(ProcessInfo.processInfo.arguments)")
     }
     
     func testAuth() throws {
         if !app.buttons["Authenticate"].waitForExistence(timeout: 2) {
-            print("⚠️ Автоматический вход обнаружен, делаем logout...")
             app.tabBars.buttons.element(boundBy: 1).tap()
             sleep(5)
             app.buttons["logout button"].tap()
@@ -37,14 +35,14 @@ final class Image_FeedUITestsLaunchTests: XCTestCase {
         XCTAssertTrue(loginTextField.waitForExistence(timeout: 5))
         
         loginTextField.tap()
-        loginTextField.typeText("diviterok@gmail.com")
+        loginTextField.typeText("yourEmail")
         webView.swipeUp()
         
         let passwordTextField = webView.descendants(matching: .secureTextField).element
         XCTAssertTrue(passwordTextField.waitForExistence(timeout: 5))
         
         passwordTextField.tap()
-        passwordTextField.typeText("29061998")
+        passwordTextField.typeText("yourPassword")
         webView.swipeUp()
         
         webView.buttons["Login"].tap()
@@ -58,7 +56,7 @@ final class Image_FeedUITestsLaunchTests: XCTestCase {
     func testFeed() throws {
         if app.buttons["Authenticate"].waitForExistence(timeout: 2) {
             let authButton = app.buttons["Authenticate"]
-            XCTAssertTrue(authButton.waitForExistence(timeout: 5), "Кнопка аутентификации не найдена")
+            XCTAssertTrue(authButton.waitForExistence(timeout: 5), "Authentification button is not found")
             authButton.tap()
             
             let webView = app.webViews["UnsplashWebView"]
@@ -67,14 +65,14 @@ final class Image_FeedUITestsLaunchTests: XCTestCase {
             XCTAssertTrue(loginTextField.waitForExistence(timeout: 5))
             
             loginTextField.tap()
-            loginTextField.typeText("diviterok@gmail.com")
+            loginTextField.typeText("yourEmail")
             webView.swipeUp()
             
             let passwordTextField = webView.descendants(matching: .secureTextField).element
             XCTAssertTrue(passwordTextField.waitForExistence(timeout: 5))
             
             passwordTextField.tap()
-            passwordTextField.typeText("29061998")
+            passwordTextField.typeText("yourPassword")
             webView.swipeUp()
             
             webView.buttons["Login"].tap()
@@ -106,6 +104,30 @@ final class Image_FeedUITestsLaunchTests: XCTestCase {
     
     
     func testProfile() throws {
+        if app.buttons["Authenticate"].waitForExistence(timeout: 2) {
+            let authButton = app.buttons["Authenticate"]
+            XCTAssertTrue(authButton.waitForExistence(timeout: 5), "Authentification button is not found")
+            authButton.tap()
+            
+            let webView = app.webViews["UnsplashWebView"]
+            XCTAssertTrue(webView.waitForExistence(timeout: 5))
+            let loginTextField = webView.descendants(matching: .textField).element
+            XCTAssertTrue(loginTextField.waitForExistence(timeout: 5))
+            
+            loginTextField.tap()
+            loginTextField.typeText("yourEmail")
+            webView.swipeUp()
+            
+            let passwordTextField = webView.descendants(matching: .secureTextField).element
+            XCTAssertTrue(passwordTextField.waitForExistence(timeout: 5))
+            
+            passwordTextField.tap()
+            passwordTextField.typeText("yourPassword")
+            webView.swipeUp()
+            
+            webView.buttons["Login"].tap()
+        }
+        
         sleep(3)
         app.tabBars.buttons.element(boundBy: 1).tap()
         

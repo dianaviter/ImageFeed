@@ -63,12 +63,12 @@ class ProfileViewControllerTests: XCTestCase {
     }
 
     func testNavigateToLoginScreen() {
-        let expectation = XCTestExpectation(description: "Ожидаем вызова navigateToLoginScreen")
+        let expectation = XCTestExpectation(description: "Waiting for navigateToLoginScreen")
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             self.presenter?.navigateToLoginScreen()
 
-            XCTAssertTrue(self.mockView.didNavigateToLogin, "❌ Метод navigateToLoginScreen не был вызван в ViewController")
+            XCTAssertTrue(self.mockView.didNavigateToLogin, "navigateToLoginScreen was not called in ViewController")
 
             expectation.fulfill()
         }
